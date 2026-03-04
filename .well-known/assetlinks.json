@@ -1,1 +1,9 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.niekiebobo.scorecount",
+        "sha256_cert_fingerprints": ["D9:64:2B:37:46:DB:FC:B3:68:63:8D:66:7A:1D:89:20:50:AD:EC:26:F8:8B:68:6F:3B:7A:84:ED:4A:7B:2C:6E"]
+      }
+    }]
 
