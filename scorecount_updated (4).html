@@ -1,0 +1,3184 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0a0f"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ScoreCount"/>
+<meta name="application-name" content="ScoreCount"/>
+<meta name="description" content="Scorekeeper voor sport — tafeltennis, badminton, volleybal en meer"/>
+<link rel="apple-touch-icon" href="./icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png"/>
+<link rel="manifest" href="./manifest.json"/>
+<title>ScoreCount</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;height:100dvh;background:#0a0a0f;font-family:'Rajdhani',sans-serif;color:#fff;overflow:hidden}
+.screen{display:none;min-height:100vh;min-height:100dvh;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* ── SPLASH ── */
+#screen-splash{align-items:center;justify-content:center;background:#000;overflow:hidden;position:relative;cursor:pointer}
+.balls-wrap{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.ball{position:absolute;animation:fall linear infinite;will-change:transform}
+@keyframes fall{0%{transform:translateY(-100px) rotate(0deg);opacity:0}6%{opacity:.8}88%{opacity:.5}100%{transform:translateY(110vh) rotate(560deg);opacity:0}}
+.splash-content{z-index:2;display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.splash-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,16vw,112px);letter-spacing:6px;background:linear-gradient(135deg,#e63946 20%,#ff6060 48%,#4361ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 32px rgba(230,57,70,.5));line-height:1;margin-bottom:6px}
+.splash-sub{font-size:11px;letter-spacing:9px;color:#2a2a3a;text-transform:uppercase;margin-bottom:56px}
+.splash-tap{font-size:11px;letter-spacing:4px;color:#2a2a3a;text-transform:uppercase;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:.75}}
+.splash-bar{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,#e63946,#4361ee);animation:sbar 2.4s ease-in-out infinite alternate}
+@keyframes sbar{from{width:0}to{width:100%}}
+
+/* ── LANG ── */
+#screen-lang{align-items:center;justify-content:center;padding:24px}
+.mini-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(44px,11vw,72px);letter-spacing:4px;background:linear-gradient(135deg,#e63946 40%,#4361ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px}
+.mini-sub{font-size:11px;letter-spacing:7px;color:#333;text-transform:uppercase;margin-bottom:36px}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:320px}
+.lang-card{background:#0d0d18;border:1px solid #1a1a28;border-radius:12px;padding:18px;cursor:pointer;text-align:center;transition:all .2s}
+.lang-card:hover{border-color:#e63946;box-shadow:0 0 16px rgba(230,57,70,.15)}
+.lang-flag{font-size:28px;display:block;margin-bottom:6px}
+.lang-name{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777}
+
+/* ── HOME ── */
+#screen-home{align-items:center;justify-content:center;padding:24px}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(50px,13vw,88px);letter-spacing:4px;background:linear-gradient(135deg,#e63946 40%,#4361ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px}
+.logo-sub{font-size:11px;letter-spacing:8px;color:#333;text-transform:uppercase;margin-bottom:38px}
+.sport-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;max-width:390px}
+.sport-card{background:#0d0d18;border:1px solid #1a1a28;border-radius:13px;padding:20px 14px;cursor:pointer;transition:all .2s;text-align:center}
+.sport-card:hover{border-color:#e63946;transform:translateY(-2px);box-shadow:0 6px 24px rgba(230,57,70,.16)}
+.sc-icon{font-size:34px;display:block;margin-bottom:6px}
+.sc-name{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa}
+
+/* ── SETUP ── */
+#screen-setup{align-items:center;padding:26px 18px}
+.setup-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:3px;color:#666;margin-bottom:20px}
+.team-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:430px;margin-bottom:14px}
+.team-input-wrap{display:flex;flex-direction:column;gap:5px;position:relative}
+/* Name suggestions dropdown */
+.name-av-pick{display:none;align-items:center;gap:6px;margin-top:3px}
+.name-av-pick.show{display:flex}
+.name-av-pick-btn{background:#0d0d18;border:1px dashed #252538;border-radius:8px;padding:5px 10px;font-size:18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;width:100%}
+.name-av-pick-btn:hover{border-color:#444}
+.name-av-pick-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#333;font-family:'Rajdhani',sans-serif;font-weight:700}
+.name-suggestions.open{display:block}
+.name-sug-item{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;transition:background .1s;border-top:1px solid #111}
+.name-sug-item:first-child{border-top:none}
+.name-sug-item:hover{background:#131320}
+.name-sug-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.name-sug-name{font-size:11px;font-weight:700;letter-spacing:1px;color:#888;text-transform:uppercase}
+.name-sug-wl{font-size:9px;color:#333;letter-spacing:1px}
+/* In-game avatar — subtle */
+.tname-wrap{display:flex;flex-direction:column;align-items:center;gap:3px;margin-bottom:6px}
+.tname-av{font-size:18px;opacity:0.55;line-height:1}
+.team-lbl{font-size:10px;letter-spacing:3px;text-transform:uppercase}
+.lbl-r{color:#e63946}.lbl-b{color:#4361ee}
+.team-input{background:#0d0d18;border:2px solid;border-radius:8px;padding:10px;font-size:16px;font-family:'Rajdhani',sans-serif;font-weight:700;color:#fff;outline:none;width:100%;text-align:center}
+.ti-r{border-color:#e63946}.ti-b{border-color:#4361ee}
+.info-box{background:#0d0d18;border:1px solid #1a1a28;border-radius:11px;padding:14px;width:100%;max-width:430px;margin-bottom:14px}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid #111118}
+.info-row:last-child{border-bottom:none}
+.info-row label{font-size:12px;color:#666}
+.info-val{font-weight:700;color:#aaa;font-size:13px}
+.info-row input[type=number]{background:#07070f;border:1px solid #222;border-radius:5px;color:#fff;padding:4px 6px;width:56px;font-size:14px;font-family:'Rajdhani',sans-serif;font-weight:700;text-align:center;outline:none}
+.btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;border-radius:9px;padding:12px 20px;transition:all .18s}
+.btn-p{background:linear-gradient(135deg,#e63946,#c1121f);color:#fff;width:100%;max-width:430px;margin-bottom:9px}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(230,57,70,.35)}
+.btn-g{background:transparent;color:#444;border:1px solid #1a1a28;font-size:11px;padding:7px 14px}
+.btn-g:hover{color:#888;border-color:#444}
+
+/* ── GAME ── */
+.g-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #0d0d18;flex-shrink:0}
+#screen-game{overflow:hidden;max-height:100dvh;max-height:100vh}
+.g-sport{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#2a2a3a}
+.sets-row{display:flex;gap:5px;align-items:center}
+.set-badge{background:#0d0d18;border:1px solid #181828;border-radius:5px;padding:3px 9px;font-size:13px;font-weight:700}
+.sb-r{color:#e63946}.sb-b{color:#4361ee}
+.set-sep{color:#1a1a28;font-size:10px}
+.set-lbl{font-size:8px;color:#222;letter-spacing:2px;text-transform:uppercase}
+.scoreboard{display:grid;grid-template-columns:1fr 40px 1fr;flex:1;min-height:0;overflow:hidden}
+.team-panel{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px 6px;cursor:pointer;user-select:none;transition:background .1s}
+.tp-r{background:linear-gradient(160deg,#130306,#080008)}
+.tp-b{background:linear-gradient(160deg,#030714,#010306)}
+.tp-r.fl{background:linear-gradient(160deg,#360a12,#180508)}
+.tp-b.fl{background:linear-gradient(160deg,#081240,#030714)}
+.tname{font-size:clamp(10px,2.8vw,17px);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;text-align:center;word-break:break-word;padding:0 3px}
+.tn-r{color:#e63946}.tn-b{color:#4361ee}
+.snum{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,104px);line-height:1}
+.sn-r{color:#e63946;text-shadow:0 0 28px rgba(230,57,70,.4)}
+.sn-b{color:#4361ee;text-shadow:0 0 28px rgba(67,97,238,.4)}
+.snum.pop{animation:sPop .2s ease}
+@keyframes sPop{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
+.tap-h{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#141422;margin-top:6px}
+.center-col{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0f;gap:4px;padding:4px 1px}
+.set-dots{display:flex;flex-direction:column;gap:3px}
+.set-dot{width:6px;height:6px;border-radius:50%;background:#111120}
+.dr{background:#e63946;box-shadow:0 0 5px #e63946}
+.db{background:#4361ee;box-shadow:0 0 5px #4361ee}
+.vs{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#181828;letter-spacing:2px}
+.status-bar{background:#060610;border-top:1px solid #0d0d18;padding:6px 12px;min-height:30px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#stxt{font-size:12px;font-weight:600;letter-spacing:1px;color:#f4d03f;text-align:center}
+#stxt.mp{animation:mpA .7s ease-in-out infinite alternate}
+#stxt.sp{color:#a8e6cf}
+@keyframes mpA{from{color:#f4d03f}to{color:#ff8000}}
+
+/* ── VOICE BAR ── */
+.voice-bar{background:#050510;border-top:1px solid #0d0d18;padding:7px 12px;padding-left:max(12px, env(safe-area-inset-left));padding-right:max(12px, env(safe-area-inset-right));display:none;align-items:center;gap:10px;flex-shrink:0}
+.voice-bar.show{display:flex}
+
+.mic-wrap{position:relative;width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.mic-ring{position:absolute;inset:0;border-radius:50%;border:2px solid #4361ee;opacity:0;animation:none}
+/* IDLE / LISTEN: NO rings — just icon glow so you can see it's ready */
+/* ACTIVE: sound detected — green rings pulse fast */
+.mic-wrap.active .mic-ring{border-color:#2ecc71}
+.mic-wrap.active .mic-ring.r1{animation:ring .5s ease-out infinite}
+.mic-wrap.active .mic-ring.r2{animation:ring .5s ease-out .17s infinite}
+.mic-wrap.active .mic-ring.r3{animation:ring .5s ease-out .34s infinite}
+/* MATCHED red */
+.mic-wrap.m0 .mic-ring{border-color:#e63946}
+.mic-wrap.m0 .mic-ring.r1{animation:ring .4s ease-out infinite}
+.mic-wrap.m0 .mic-ring.r2{animation:ring .4s ease-out .13s infinite}
+.mic-wrap.m0 .mic-ring.r3{animation:ring .4s ease-out .26s infinite}
+/* MATCHED blue */
+.mic-wrap.m1 .mic-ring{border-color:#4361ee}
+.mic-wrap.m1 .mic-ring.r1{animation:ring .4s ease-out infinite}
+.mic-wrap.m1 .mic-ring.r2{animation:ring .4s ease-out .13s infinite}
+.mic-wrap.m1 .mic-ring.r3{animation:ring .4s ease-out .26s infinite}
+@keyframes ring{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.1);opacity:0}}
+.mic-icon{font-size:17px;z-index:1;transition:filter .15s}
+.mic-wrap.idle  .mic-icon{filter:grayscale(1);opacity:.2}
+.mic-wrap.listen .mic-icon{opacity:.7;filter:drop-shadow(0 0 3px rgba(67,97,238,.4))}
+.mic-wrap.active .mic-icon{filter:drop-shadow(0 0 7px #2ecc71);animation:mPop .25s ease}
+.mic-wrap.m0    .mic-icon{filter:drop-shadow(0 0 10px #e63946);animation:mPop .25s ease}
+.mic-wrap.m1    .mic-icon{filter:drop-shadow(0 0 10px #4361ee);animation:mPop .25s ease}
+.mic-wrap.miss  .mic-icon{filter:drop-shadow(0 0 5px #e63946) grayscale(.4)}
+@keyframes mPop{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
+
+.level-meter{display:flex;align-items:flex-end;gap:2px;height:22px;flex-shrink:0}
+.level-bar{width:4px;background:#1a1a28;border-radius:2px;transition:height .07s,background .07s}
+
+.voice-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.vi-h{font-size:11px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vi-h b{color:#666}
+.vi-m{font-size:11px;font-weight:700}
+.vm-ok0{color:#e63946}.vm-ok1{color:#4361ee}.vm-miss{color:#f4d03f}.vm-wait{color:#2a2a3a}
+
+/* ── CONTROLS ── */
+.controls{display:flex;gap:6px;padding:8px 10px;padding-bottom:calc(8px + env(safe-area-inset-bottom));justify-content:center;background:#0a0a0f;border-top:1px solid #0d0d18;flex-wrap:wrap;flex-shrink:0}
+.ctrl-btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid;border-radius:7px;padding:8px 10px;cursor:pointer;transition:all .15s;background:transparent}
+.c-undo{border-color:#181828;color:#444}.c-undo:hover{border-color:#555;color:#aaa}
+.c-voice{border-color:#4361ee;color:#4361ee;display:flex;align-items:center;gap:5px}
+.c-voice.on{background:#4361ee;color:#fff}
+.c-new{border-color:#181828;color:#444}.c-new:hover{border-color:#e63946;color:#e63946}
+
+/* ── AD ── */
+#ad-ov{display:none;position:fixed;inset:0;background:#000;z-index:300;flex-direction:column;align-items:center;justify-content:center}
+#ad-ov.show{display:flex}
+.ad-top{position:absolute;top:0;left:0;right:0;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.ad-lbl{font-size:9px;letter-spacing:3px;color:#333;text-transform:uppercase}
+.ad-right{display:flex;align-items:center;gap:8px}
+.ad-cd{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#333;min-width:18px;text-align:center}
+.ad-skip{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid #222;border-radius:5px;padding:5px 10px;cursor:pointer;background:transparent;color:#333;transition:all .2s}
+.ad-skip:not([disabled]):hover{border-color:#ccc;color:#fff}
+.ad-skip[disabled]{opacity:.2;cursor:default}
+.ad-body{width:100%;max-width:560px;padding:16px}
+.ad-slot{width:100%;aspect-ratio:16/9;max-height:290px;background:#08080f;border:2px dashed #181828;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.ad-si{font-size:34px;opacity:.15}
+.ad-st{font-size:11px;letter-spacing:3px;color:#1a1a28;text-transform:uppercase}
+
+/* ── WINNER ── */
+#win-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);flex-direction:column;align-items:center;justify-content:center;z-index:200;padding:22px;backdrop-filter:blur(12px);cursor:pointer}
+#win-ov.show{display:flex}
+.trophy{font-size:62px;animation:tBounce .5s ease;margin-bottom:11px}
+@keyframes tBounce{0%{transform:scale(0)}70%{transform:scale(1.22)}100%{transform:scale(1)}}
+.wn{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,9vw,60px);letter-spacing:4px;margin-bottom:4px}
+.ws{font-size:10px;color:#444;letter-spacing:4px;text-transform:uppercase;margin-bottom:16px}
+.wsc{font-size:26px;font-weight:700;margin-bottom:24px}
+.wbtns{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+.win-dismiss-hint{font-size:9px;color:#222;letter-spacing:2px;margin-top:18px;text-transform:uppercase}
+
+/* ── CONFETTI ── */
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:201;display:none}
+#confetti-canvas.show{display:block}
+
+/* ── DARTS PANEL ── */
+#darts-panel{display:none;flex-direction:column;flex:1;background:#0a0a0f}
+#darts-panel.show{display:flex}
+.darts-scores{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0}
+.dart-player{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 6px;cursor:pointer;transition:background .15s}
+.dp-r{background:linear-gradient(160deg,#130306,#080008)}
+.dp-b{background:linear-gradient(160deg,#030714,#010306)}
+.dart-player.active-r{background:linear-gradient(160deg,#2a0610,#130306);border-bottom:2px solid #e63946}
+.dart-player.active-b{background:linear-gradient(160deg,#040e28,#030714);border-bottom:2px solid #4361ee}
+.dart-player-name{font-size:clamp(10px,2.8vw,16px);font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.dpn-r{color:#e63946}.dpn-b{color:#4361ee}
+.dart-remaining{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,12vw,90px);line-height:1}
+.dr-r{color:#e63946;text-shadow:0 0 24px rgba(230,57,70,.4)}
+.dr-b{color:#4361ee;text-shadow:0 0 24px rgba(67,97,238,.4)}
+.dart-legs{font-size:11px;color:#333;letter-spacing:2px;margin-top:4px}
+.dart-legs span{color:#888;font-weight:700}
+.dart-avg{font-size:10px;color:#222;letter-spacing:1px;margin-top:2px}
+.dart-turn-arrow{font-size:18px;position:absolute;animation:arrBlink 1s ease-in-out infinite}
+@keyframes arrBlink{0%,100%{opacity:.3}50%{opacity:1}}
+.dart-input-area{background:#060610;border-top:1px solid #0d0d18;padding:8px 10px;padding-bottom:calc(8px + env(safe-area-inset-bottom));flex-shrink:0}
+.dart-input-label{font-size:9px;letter-spacing:3px;color:#444;text-transform:uppercase;text-align:center;margin-bottom:6px}
+.dart-display{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#fff;text-align:center;min-height:42px;letter-spacing:4px;margin-bottom:8px}
+.dart-display.bust{color:#e63946;animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.dart-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;max-width:280px;margin:0 auto}
+.dart-key{font-family:'Bebas Neue',sans-serif;font-size:22px;border:1px solid #181828;border-radius:8px;padding:9px 4px;cursor:pointer;background:#0d0d18;color:#ccc;text-align:center;transition:all .12s;letter-spacing:1px}
+.dart-key:hover{border-color:#444;color:#fff}
+.dart-key.dk-ok{background:linear-gradient(135deg,#e63946,#c1121f);border-color:#e63946;color:#fff;font-size:16px;letter-spacing:2px}
+.dart-key.dk-ok:hover{box-shadow:0 4px 16px rgba(230,57,70,.4)}
+.dart-key.dk-del{color:#666;font-size:16px}
+
+/* ── TENNIS PANEL ── */
+.tennis-pts{display:flex;justify-content:center;gap:16px;align-items:center;padding:4px 0}
+.tp-score{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,7vw,44px);letter-spacing:2px}
+.tp-r{color:#e63946}.tp-b{color:#4361ee}
+.tp-mid{font-size:16px;color:#222;font-family:'Bebas Neue',sans-serif}
+
+/* ── SPORT GRID SCROLL ── */
+.sport-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%;max-width:390px;max-height:52vh;overflow-y:auto;padding-right:2px}
+.sport-grid::-webkit-scrollbar{width:3px}
+.sport-grid::-webkit-scrollbar-track{background:#0a0a0f}
+.sport-grid::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+
+/* ── HISTORY ── */
+#screen-history{padding:0;align-items:stretch}
+.hist-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #0d0d18;flex-shrink:0}
+.hist-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:#666}
+.hist-list{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.hist-list::-webkit-scrollbar{width:3px}
+.hist-list::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.hist-card{background:#0d0d18;border:1px solid #181828;border-radius:10px;padding:11px 13px;display:flex;flex-direction:column;gap:4px}
+.hist-top{display:flex;justify-content:space-between;align-items:center}
+.hist-sport{font-size:13px;font-weight:700;color:#aaa;letter-spacing:1px}
+.hist-dt{font-size:10px;color:#333;letter-spacing:1px}
+.hist-players{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}
+.hist-p0{color:#e63946}.hist-p1{color:#4361ee}
+.hist-vs{color:#222;font-size:10px}
+.hist-score{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px}
+.hist-sc0{color:#e63946}.hist-sc1{color:#4361ee}.hist-dash{color:#333;margin:0 4px}
+.hist-winner{font-size:10px;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.hist-empty{text-align:center;color:#2a2a3a;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:40px 0}
+.hist-clear{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid #181828;border-radius:6px;padding:6px 12px;cursor:pointer;background:transparent;color:#333;transition:all .2s}
+.hist-clear:hover{border-color:#e63946;color:#e63946}
+/* ── PLAYER STATS ── */
+#screen-players{padding:0;align-items:stretch}
+.pl-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #0d0d18;flex-shrink:0}
+.pl-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:#666}
+.pl-list{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.pl-list::-webkit-scrollbar{width:3px}
+.pl-list::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.pl-card{background:#0d0d18;border:1px solid #181828;border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.pl-card:hover{border-color:#e63946}
+.pl-card-top{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.pl-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;font-weight:900;flex-shrink:0}
+.pl-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#ccc;flex:1}
+.pl-wl{font-size:11px;color:#444;letter-spacing:1px}
+.pl-bar-row{display:flex;height:3px;margin:0 14px 12px}
+.pl-bar-w{background:#e63946;border-radius:2px 0 0 2px;transition:width .3s}
+.pl-bar-l{background:#1a1a28;flex:1;border-radius:0 2px 2px 0}
+
+/* Detail screen */
+#screen-player-detail{padding:0;align-items:stretch}
+.pd-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #0d0d18;flex-shrink:0}
+.pd-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:22px;font-weight:900;flex-shrink:0}
+.pd-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:#ccc}
+.pd-body{flex:1;overflow-y:auto;padding:12px}
+.pd-body::-webkit-scrollbar{width:3px}
+.pd-body::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.pd-section{margin-bottom:14px}
+.pd-section-title{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#333;margin-bottom:8px}
+.pd-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pd-stat{background:#0d0d18;border:1px solid #181828;border-radius:10px;padding:12px;text-align:center}
+.pd-stat-val{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:#f4d03f;display:block}
+.pd-stat-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#333;display:block;margin-top:2px}
+.pd-wide{background:#0d0d18;border:1px solid #181828;border-radius:10px;padding:12px}
+.pd-wide-val{font-size:13px;font-weight:700;color:#ccc;letter-spacing:1px}
+.pd-wide-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#333;margin-top:2px}
+.pd-sport-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #111}
+.pd-sport-row:last-child{border-bottom:none}
+.pd-sport-name{font-size:12px;font-weight:700;color:#888;letter-spacing:1px}
+.pd-sport-count{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#444;letter-spacing:1px}
+.pd-recent{display:flex;flex-direction:column;gap:6px}
+.pd-recent-item{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#060610;border-radius:7px}
+.pd-recent-opp{font-size:11px;font-weight:700;color:#666;letter-spacing:1px}
+.pd-recent-sc{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px}
+.pd-recent-result{font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.pd-delete{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;border:1px solid #2a0a0a;border-radius:7px;padding:7px 14px;background:transparent;color:#e63946;cursor:pointer;transition:all .15s}
+.pd-delete:hover{background:#e63946;color:#fff;border-color:#e63946}
+.pd-edit-avatar{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#333;cursor:pointer;padding:3px 7px;border:1px solid #1a1a28;border-radius:5px;background:transparent;margin-top:3px;transition:all .12s}
+.pd-edit-avatar:hover{border-color:#444;color:#888}
+
+/* Avatar picker modal */
+.av-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.av-overlay.show{opacity:1;pointer-events:all}
+.av-sheet{background:#0d0d18;border-radius:18px 18px 0 0;border-top:1px solid #1a1a28;width:100%;max-width:480px;padding:18px 16px 32px;transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)}
+.av-overlay.show .av-sheet{transform:translateY(0)}
+.av-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:#666;text-align:center;margin-bottom:14px}
+.av-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;max-height:52vh;overflow-y:auto;padding-right:2px}
+.av-grid::-webkit-scrollbar{width:3px}
+.av-grid::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+.av-item{aspect-ratio:1;border-radius:12px;border:2px solid #181828;background:#060610;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;transition:all .12s}
+.av-item:hover{border-color:#444;background:#0d0d18}
+.av-item.sel{border-color:#f4d03f;background:#1a1500}
+.av-cancel{width:100%;margin-top:12px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;text-transform:uppercase;border:1px solid #1a1a28;border-radius:8px;padding:10px;background:transparent;color:#444;cursor:pointer}
+/* ── CUSTOM PRESETS ── */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;margin-bottom:10px}
+.preset-btn{background:#0d0d18;border:1px solid #181828;border-radius:8px;padding:9px 6px;cursor:pointer;text-align:center;transition:all .18s;font-family:'Rajdhani',sans-serif}
+.preset-btn:hover{border-color:#e63946;background:#130306}
+.preset-icon{font-size:20px;display:block;margin-bottom:2px}
+.preset-name{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#888;display:block}
+.preset-sub{font-size:9px;color:#444;display:block}
+.preset-divider{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#2a2a3a;margin:4px 0 8px;text-align:center;width:100%}
+.preset-add{background:#0d0d18;border:2px dashed #1a1a28;border-radius:8px;padding:9px 6px;cursor:pointer;text-align:center;transition:all .18s;font-family:'Rajdhani',sans-serif}
+.preset-add:hover{border-color:#4361ee;background:#030714}
+.preset-add-icon{font-size:20px;display:block;margin-bottom:2px;color:#4361ee}
+.preset-add-name{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4361ee;display:block}
+.preset-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;background:#e63946;border:none;border-radius:50%;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;line-height:1;padding:0}
+.preset-btn:hover .preset-del{opacity:1}
+.preset-btn{position:relative}
+.preset-modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:250;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+.preset-modal-ov.show{display:flex}
+.preset-modal{background:#0d0d18;border:1px solid #1a1a28;border-radius:14px;padding:22px 18px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
+.preset-modal h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#666;text-align:center;margin:0}
+.pm-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pm-row label{font-size:11px;color:#666;letter-spacing:1px;white-space:nowrap}
+.pm-row input,.pm-row select{background:#07070f;border:1px solid #222;border-radius:6px;color:#fff;padding:7px 8px;font-size:14px;font-family:'Rajdhani',sans-serif;font-weight:700;text-align:center;outline:none;width:70px}
+.pm-row input[type=text]{width:100%;text-align:left}
+.pm-emoji-grid{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.pm-emoji{width:34px;height:34px;border:1px solid #181828;border-radius:7px;background:#07070f;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.pm-emoji:hover,.pm-emoji.sel{border-color:#4361ee;background:#0a1030}
+.pm-btns{display:flex;gap:8px;margin-top:4px}
+.pm-btns .btn{flex:1;font-size:12px;padding:10px}
+
+/* -- TOURNAMENT -- */
+#screen-tourn-setup{align-items:center;padding:20px 16px}
+#screen-bracket{padding:0;align-items:stretch}
+.ts-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:#666;margin-bottom:16px;text-align:center}
+.ts-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#444;margin-bottom:8px;text-align:center}
+.ts-sport-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:14px;width:100%;max-width:400px}
+.ts-sport-btn{background:#0d0d18;border:1px solid #181828;border-radius:8px;padding:8px 4px;cursor:pointer;text-align:center;transition:all .18s}
+.ts-sport-btn:hover,.ts-sport-btn.sel{border-color:#f4d03f;background:#1a1508}
+.ts-sport-btn .sc-icon{font-size:22px;display:block}
+.ts-sport-btn .sc-name{font-size:8px;color:#666;display:block;margin-top:2px}
+.ts-mode-row{display:flex;gap:8px;width:100%;max-width:400px;margin-bottom:14px}
+.ts-mode-btn{flex:1;background:#0d0d18;border:1px solid #181828;border-radius:10px;padding:14px 8px;cursor:pointer;text-align:center;transition:all .18s}
+.ts-mode-btn:hover,.ts-mode-btn.sel{border-color:#f4d03f;background:#1a1508}
+.ts-mode-icon{font-size:26px;display:block;margin-bottom:4px}
+.ts-mode-name{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa;display:block}
+.ts-mode-sub{font-size:9px;color:#444;display:block;margin-top:2px}
+.ts-player-count{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:14px}
+.ts-count-btn{width:36px;height:36px;border-radius:50%;border:1px solid #181828;background:#0d0d18;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;transition:all .15s}
+.ts-count-btn:hover{border-color:#f4d03f}
+.ts-count-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#f4d03f;min-width:40px;text-align:center}
+.ts-names-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;max-width:400px;margin-bottom:14px}
+.ts-name-input{background:#0d0d18;border:1px solid #181828;border-radius:7px;padding:9px 10px;font-size:13px;font-family:'Rajdhani',sans-serif;font-weight:700;color:#fff;outline:none;width:100%;text-align:center}
+.ts-name-input:focus{border-color:#f4d03f}
+.ts-name-input::placeholder{color:#333}
+.bk-header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #0d0d18;flex-shrink:0;background:#060610}
+.bk-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#f4d03f}
+.bk-subtitle{font-size:10px;color:#444;letter-spacing:2px;text-transform:uppercase}
+.bk-body{flex:1;overflow:auto;padding:0}
+.bk-body::-webkit-scrollbar{width:3px;height:3px}
+.bk-body::-webkit-scrollbar-thumb{background:#222;border-radius:2px}
+
+/* ── VISUAL KO BRACKET ── */
+.vbk-outer{padding:10px 12px 16px;min-width:max-content}
+.vbk-wrap{display:flex;gap:0;align-items:flex-start}
+.vbk-col{display:flex;flex-direction:column}
+.vbk-col-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#3a3a5a;text-align:center;padding:0 0 8px;text-transform:uppercase;padding-right:22px;white-space:nowrap}
+.vbk-col-matches{display:flex;flex-direction:column}
+
+/* Slot = container for one match + connector lines */
+.vbk-slot{display:flex;align-items:center;position:relative;padding-right:22px}
+.vbk-slot.no-conn{padding-right:0}
+/* Horizontal arm */
+.vbk-slot.top-c::after,.vbk-slot.bot-c::after{content:'';position:absolute;right:0;top:calc(50% - 1px);width:22px;height:2px;background:#222235}
+/* Vertical bracket line – top half: from center downward */
+.vbk-slot.top-c::before{content:'';position:absolute;right:0;top:50%;width:2px;bottom:0;background:#222235}
+/* Vertical bracket line – bot half: from top to center */
+.vbk-slot.bot-c::before{content:'';position:absolute;right:0;top:0;height:50%;width:2px;background:#222235}
+
+/* Match card */
+.vbk-match{background:#0d0d18;border:1px solid #1a1a2a;border-radius:9px;overflow:hidden;width:132px;flex-shrink:0;transition:border-color .15s,box-shadow .15s}
+.vbk-match.active{border-color:#f4d03f;box-shadow:0 0 16px rgba(244,208,63,.22)}
+.vbk-match.bye{opacity:.3}
+
+/* Team row */
+.vbk-team{display:flex;align-items:center;gap:5px;padding:6px 8px;min-height:29px}
+.vbk-team+.vbk-team{border-top:1px solid #101020}
+.vbk-seed{font-family:'Bebas Neue',sans-serif;font-size:12px;color:#333;min-width:13px;text-align:right;flex-shrink:0}
+.vbk-name{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#666;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:94px}
+.vbk-team.win{background:rgba(244,208,63,.07)}
+.vbk-team.win .vbk-seed{color:#f4d03f}
+.vbk-team.win .vbk-name{color:#f4d03f}
+.vbk-team.loss .vbk-seed{color:#1e1e2e}
+.vbk-team.loss .vbk-name{color:#252535;text-decoration:line-through}
+.vbk-team.tbd .vbk-name{color:#1e1e2a;font-style:italic}
+
+/* Footer: score or play button */
+.vbk-foot{border-top:1px solid #101020;padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.vbk-play-btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;border:1px solid #f4d03f;border-radius:5px;padding:3px 9px;cursor:pointer;background:transparent;color:#f4d03f;transition:all .12s}
+.vbk-play-btn:hover{background:#f4d03f;color:#000}
+.vbk-sc{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#444;letter-spacing:2px}
+
+/* Champion / result column */
+.vbk-result-col{display:flex;flex-direction:column}
+.vbk-result-lbl{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:2px;color:#3a3a5a;text-align:center;padding:0 0 8px;text-transform:uppercase;white-space:nowrap}
+.vbk-result-wrap{display:flex;align-items:center;flex:1}
+.vbk-result-box{background:#0d0d18;border:1px solid #252538;border-radius:9px;width:118px;overflow:hidden}
+.vbk-result-box.champion{border-color:#f4d03f55;box-shadow:0 0 22px rgba(244,208,63,.14)}
+.vbk-trophy-big{font-size:30px;text-align:center;padding:12px 0 4px;display:block}
+.vbk-champ-name{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:#f4d03f;text-align:center;padding:0 6px 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.vbk-champ-lbl{font-size:8px;letter-spacing:3px;text-transform:uppercase;color:#444;text-align:center;padding-bottom:10px;display:block}
+.vbk-result-pending{display:flex;align-items:center;gap:6px;padding:10px 8px}
+.vbk-result-pending-name{font-size:10px;font-weight:700;color:#222232;text-transform:uppercase;letter-spacing:.5px}
+
+/* Round Robin (unchanged) */
+.bk-round{margin-bottom:18px;padding:0 12px}
+.bk-round-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#444;margin-bottom:8px;text-align:center}
+.bk-match{background:#0d0d18;border:1px solid #181828;border-radius:10px;padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;transition:all .15s}
+.bk-match.current{border-color:#f4d03f;box-shadow:0 0 12px rgba(244,208,63,.15)}
+.bk-match.done{opacity:.6}
+.bk-match.bye{opacity:.3}
+.bk-players{display:flex;align-items:center;gap:6px;flex:1;font-size:13px;font-weight:700}
+.bk-p{padding:3px 8px;border-radius:5px;letter-spacing:1px}
+.bk-p.w{background:rgba(244,208,63,.1);color:#f4d03f}
+.bk-p.l{color:#333;text-decoration:line-through}
+.bk-p.pending{color:#666}
+.bk-vs{color:#222;font-size:10px;margin:0 4px}
+.bk-score{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#444;margin-right:8px}
+.bk-play{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:10px;letter-spacing:2px;text-transform:uppercase;border:1px solid #f4d03f;border-radius:6px;padding:6px 12px;cursor:pointer;background:transparent;color:#f4d03f;transition:all .15s;flex-shrink:0}
+.bk-play:hover{background:#f4d03f;color:#000}
+.bk-champion{text-align:center;padding:24px;margin-top:12px}
+.bk-champion-icon{font-size:52px;display:block;margin-bottom:8px}
+.bk-champion-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,7vw,44px);letter-spacing:4px;color:#f4d03f}
+.bk-champion-lbl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#666;margin-top:4px}
+.rr-table{width:100%;border-collapse:collapse;margin-bottom:12px}
+.rr-table th,.rr-table td{padding:6px 8px;text-align:center;font-size:12px;border-bottom:1px solid #111}
+.rr-table th{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#444}
+.rr-table td{color:#aaa;font-weight:700}
+.rr-rank{color:#f4d03f;font-family:'Bebas Neue',sans-serif;font-size:16px}
+.rr-name{text-align:left!important;color:#ccc}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="screen-splash" class="screen active" onclick="splashNext()">
+  <div class="balls-wrap" id="balls"></div>
+  <div class="splash-content">
+    <div class="splash-logo">ScoreCount</div>
+    <div class="splash-sub">Scoreapp</div>
+    <div class="splash-tap" id="stap">Tik om te starten</div>
+  </div>
+  <div class="splash-bar"></div>
+</div>
+
+<!-- LANG -->
+<div id="screen-lang" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:24px">
+    <div class="mini-logo">ScoreCount</div>
+    <div class="mini-sub">Scoreapp</div>
+    <div style="font-size:11px;letter-spacing:3px;color:#444;text-transform:uppercase;margin-bottom:16px">Kies je taal / Choose language</div>
+    <div class="lang-grid">
+      <div class="lang-card" onclick="setLang('nl')"><span class="lang-flag">🇳🇱</span><span class="lang-name">Nederlands</span></div>
+      <div class="lang-card" onclick="setLang('en')"><span class="lang-flag">🇬🇧</span><span class="lang-name">English</span></div>
+      <div class="lang-card" onclick="setLang('de')"><span class="lang-flag">🇩🇪</span><span class="lang-name">Deutsch</span></div>
+      <div class="lang-card" onclick="setLang('fr')"><span class="lang-flag">🇫🇷</span><span class="lang-name">Français</span></div>
+      <div class="lang-card" onclick="setLang('es')"><span class="lang-flag">🇪🇸</span><span class="lang-name">Español</span></div>
+      <div class="lang-card" onclick="setLang('it')"><span class="lang-flag">🇮🇹</span><span class="lang-name">Italiano</span></div>
+      <div class="lang-card" onclick="setLang('no')"><span class="lang-flag">🇳🇴</span><span class="lang-name">Norsk</span></div>
+      <div class="lang-card" onclick="setLang('sv')"><span class="lang-flag">🇸🇪</span><span class="lang-name">Svenska</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="screen-home" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:24px">
+    <div class="logo">ScoreCount</div>
+    <div class="logo-sub">Scoreapp</div>
+    <div class="sport-grid">
+      <div class="sport-card" onclick="sel('tt')"><span class="sc-icon">🏓</span><span class="sc-name" id="sn-tt">Tafeltennis</span></div>
+      <div class="sport-card" onclick="sel('bd')"><span class="sc-icon">🏸</span><span class="sc-name" id="sn-bd">Badminton</span></div>
+      <div class="sport-card" onclick="sel('vb')"><span class="sc-icon">🏐</span><span class="sc-name" id="sn-vb">Volleybal</span></div>
+      <div class="sport-card" onclick="sel('sq')"><span class="sc-icon">🎱</span><span class="sc-name" id="sn-sq">Squash</span></div>
+      <div class="sport-card" onclick="sel('pd')"><span class="sc-icon">🏸</span><span class="sc-name" id="sn-pd">Padel</span></div>
+      <div class="sport-card" onclick="sel('pk')"><span class="sc-icon">🥒</span><span class="sc-name" id="sn-pk">Pickleball</span></div>
+      <div class="sport-card" onclick="sel('tn')"><span class="sc-icon">🎾</span><span class="sc-name" id="sn-tn">Tennis</span></div>
+      <div class="sport-card" onclick="sel('pe')"><span class="sc-icon">🪨</span><span class="sc-name" id="sn-pe">Pétanque</span></div>
+      <div class="sport-card" onclick="sel('dt')"><span class="sc-icon">🎯</span><span class="sc-name" id="sn-dt">Darts</span></div>
+      <div class="sport-card" onclick="sel('cu')"><span class="sc-icon">⚙️</span><span class="sc-name" id="sn-cu">Eigen Spel</span></div>
+      <div class="sport-card" style="border-color:#1a1508" onclick="openTournament()"><span class="sc-icon">🏆</span><span class="sc-name" style="color:#f4d03f" id="sn-tourn">Toernooi</span></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:22px"><button class="btn-g btn" onclick="showScreen('lang')">🌐 <span id="lbl-cl">Taal wijzigen</span></button><button class="btn-g btn" id="btn-hist-home" onclick="showHistoryScreen()">📋 <span id="lbl-hist-btn">Historie</span></button><button class="btn-g btn" id="btn-players-home" onclick="showPlayersScreen()">👤 <span id="lbl-players-btn">Spelers</span></button></div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;padding:26px 18px;flex:1">
+    <div class="setup-title" id="setup-title">🏓</div>
+    <div class="team-inputs">
+      <div class="team-input-wrap">
+        <span class="team-lbl lbl-r" id="lbl-tr">Team Rood</span>
+        <input id="name-r" class="team-input ti-r" value="Team Rood" maxlength="14" autocomplete="off" oninput="onNameInput(0)" onfocus="onNameInput(0)" onblur="hideNameSug(0)"/>
+        <div class="name-suggestions" id="sug-r"></div>
+        <div class="name-av-pick" id="av-pick-r">
+          <button class="name-av-pick-btn" onmousedown="openAvatarPickerForInput(0)">
+            <span id="av-pick-icon-r">😊</span>
+            <span class="name-av-pick-lbl" id="av-pick-lbl-r">Kies embleem</span>
+          </button>
+        </div>
+      </div>
+      <div class="team-input-wrap">
+        <span class="team-lbl lbl-b" id="lbl-tb">Team Blauw</span>
+        <input id="name-b" class="team-input ti-b" value="Team Blauw" maxlength="14" autocomplete="off" oninput="onNameInput(1)" onfocus="onNameInput(1)" onblur="hideNameSug(1)"/>
+        <div class="name-suggestions" id="sug-b"></div>
+        <div class="name-av-pick" id="av-pick-b">
+          <button class="name-av-pick-btn" onmousedown="openAvatarPickerForInput(1)">
+            <span id="av-pick-icon-b">😊</span>
+            <span class="name-av-pick-lbl" id="av-pick-lbl-b">Kies embleem</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="info-box" id="sport-info"></div>
+    <button class="btn btn-p" id="btn-start" onclick="startGame()">Start</button>
+    <button class="btn btn-g" id="btn-back" onclick="showScreen('home')">← Terug</button>
+    <button class="btn btn-g" style="margin-top:4px;border-color:#f4d03f33;color:#f4d03f" onclick="openTournament(G.key)" id="btn-tourn">🏆 Toernooi modus</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="g-header">
+    <div class="g-sport" id="gsn"></div>
+    <div class="sets-row"><span class="set-badge sb-r" id="sets-r">0</span><span class="set-sep">sets</span><span class="set-badge sb-b" id="sets-b">0</span></div>
+    <div class="set-lbl" id="set-lbl">SET 1</div>
+  </div>
+  <div id="regular-board">
+  <div class="scoreboard">
+    <div class="team-panel tp-r" id="panel-r" onclick="addPoint(0)">
+      <div class="tname-wrap">
+        <div class="tname-av" id="av-r"></div>
+        <div class="tname tn-r" id="dn-r">Team Rood</div>
+      </div>
+      <div class="snum sn-r" id="sc-r">0</div>
+      <div class="tap-h" id="tap-lbl">Tik om punt</div>
+    </div>
+    <div class="center-col">
+      <div class="set-dots" id="dots-r"></div>
+      <div class="vs">VS</div>
+      <div class="set-dots" id="dots-b"></div>
+    </div>
+    <div class="team-panel tp-b" id="panel-b" onclick="addPoint(1)">
+      <div class="tname-wrap">
+        <div class="tname-av" id="av-b"></div>
+        <div class="tname tn-b" id="dn-b">Team Blauw</div>
+      </div>
+      <div class="snum sn-b" id="sc-b">0</div>
+      <div class="tap-h" id="tap-lbl2">Tik om punt</div>
+    </div>
+  </div>
+  <!-- Tennis points bar (shown for tennis only) -->
+  <div id="tennis-bar" style="display:none;background:#060610;border-top:1px solid #0d0d18;padding:5px;flex-shrink:0">
+    <div class="tennis-pts">
+      <span class="tp-score tp-r" id="tn-pts-r">0</span>
+      <span class="tp-mid">:</span>
+      <span class="tp-score tp-b" id="tn-pts-b">0</span>
+    </div>
+  </div>
+  </div>
+  <div class="status-bar"><div id="stxt"></div></div>
+
+  <!-- DARTS PANEL (shown instead of scoreboard in darts mode) -->
+  <div id="darts-panel">
+    <div class="darts-scores" style="position:relative">
+      <div class="dart-player dp-r" id="dp-r">
+        <div class="dart-player-name dpn-r" id="dp-name-r">Team Rood</div>
+        <div class="dart-remaining dr-r" id="dp-rem-r">501</div>
+        <div class="dart-legs"><span id="dp-legs-r">0</span> legs</div>
+        <div class="dart-avg" id="dp-avg-r">gem: —</div>
+      </div>
+      <div class="dart-player dp-b" id="dp-b">
+        <div class="dart-player-name dpn-b" id="dp-name-b">Team Blauw</div>
+        <div class="dart-remaining dr-b" id="dp-rem-b">501</div>
+        <div class="dart-legs"><span id="dp-legs-b">0</span> legs</div>
+        <div class="dart-avg" id="dp-avg-b">gem: —</div>
+      </div>
+    </div>
+    <div class="dart-input-area">
+      <div class="dart-input-label" id="dart-turn-lbl">🎯 Team Rood gooit</div>
+      <div class="dart-display" id="dart-disp">0</div>
+      <div class="dart-numpad">
+        <div class="dart-key" onclick="dkPress('1')">1</div>
+        <div class="dart-key" onclick="dkPress('2')">2</div>
+        <div class="dart-key" onclick="dkPress('3')">3</div>
+        <div class="dart-key" onclick="dkPress('4')">4</div>
+        <div class="dart-key" onclick="dkPress('5')">5</div>
+        <div class="dart-key" onclick="dkPress('6')">6</div>
+        <div class="dart-key" onclick="dkPress('7')">7</div>
+        <div class="dart-key" onclick="dkPress('8')">8</div>
+        <div class="dart-key" onclick="dkPress('9')">9</div>
+        <div class="dart-key dk-del" onclick="dkDel()">⌫</div>
+        <div class="dart-key" onclick="dkPress('0')">0</div>
+        <div class="dart-key dk-ok" onclick="dkConfirm()" id="dk-ok">INVOER</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="voice-bar" id="voice-bar">
+    <div class="mic-wrap idle" id="mic-wrap">
+      <div class="mic-ring r1"></div><div class="mic-ring r2"></div><div class="mic-ring r3"></div>
+      <span class="mic-icon">🎤</span>
+    </div>
+    <div class="level-meter">
+      <div class="level-bar" id="lb0"></div><div class="level-bar" id="lb1"></div>
+      <div class="level-bar" id="lb2"></div><div class="level-bar" id="lb3"></div>
+      <div class="level-bar" id="lb4"></div>
+    </div>
+    <div class="voice-info">
+      <div class="vi-h">Gehoord: <b id="vi-h">—</b></div>
+      <div class="vi-m vm-wait" id="vi-m">wachten op spraak…</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn c-undo" id="btn-undo" onclick="undoPoint()">↩ Ongedaan</button>
+    <button class="ctrl-btn c-voice" id="btn-voice" onclick="toggleVoice()"><span id="bvi">🎤</span> <span id="bvt">Spraak</span></button>
+    <button class="ctrl-btn c-new" id="btn-new" onclick="newGame()">Nieuw Spel</button>
+  </div>
+</div>
+
+<!-- AD -->
+<div id="ad-ov">
+  <div class="ad-top">
+    <span class="ad-lbl" id="lbl-ad">Advertentie</span>
+    <div class="ad-right"><span class="ad-cd" id="ad-cd">5</span><button class="ad-skip" id="ad-skip" disabled onclick="skipAd()">Overslaan ›</button></div>
+  </div>
+  <div class="ad-body">
+    <!-- JOUW ADVERTENTIE: vervang onderstaande div door <img src="..."> of <video src="..." autoplay muted> -->
+    <div class="ad-slot"><div class="ad-si">📢</div><div class="ad-st">Advertentieruimte</div></div>
+  </div>
+</div>
+
+<!-- WINNER -->
+<div id="win-ov" onclick="dismissWinner()">
+  <div class="trophy">🏆</div>
+  <div class="wn" id="wn"></div>
+  <div class="ws" id="ws">Wint de wedstrijd!</div>
+  <div class="wsc" id="wsc"></div>
+  <div class="wbtns">
+    <button class="btn btn-p" style="max-width:190px" id="btn-replay" onclick="event.stopPropagation();showAd()">🔄 Opnieuw</button>
+    <button class="btn btn-g" id="btn-hw" onclick="event.stopPropagation();goHome()">🏠 Home</button>
+    <button class="btn btn-p" id="btn-tnext" style="display:none;max-width:190px;background:linear-gradient(135deg,#f4d03f,#e6a800)" onclick="event.stopPropagation();tournNextMatch()">▶ Volgende</button>
+  </div>
+  <div class="win-dismiss-hint">Tik om muziek te stoppen</div>
+</div>
+
+
+
+<!-- TOURNAMENT SETUP -->
+<div id="screen-tourn-setup" class="screen">
+  <div style="display:flex;flex-direction:column;align-items:center;padding:20px 16px;flex:1;overflow-y:auto">
+    <div class="ts-title" id="lbl-ts-title">🏆 Toernooi</div>
+    <div class="ts-label" id="ts-sport-lbl">Kies sport</div>
+    <div class="ts-sport-grid" id="ts-sport-grid"></div>
+    <div class="ts-label" id="lbl-ts-mode">Modus</div>
+    <div class="ts-mode-row">
+      <div class="ts-mode-btn sel" id="ts-mode-ko" onclick="setTournMode('ko')">
+        <span class="ts-mode-icon">⚔️</span>
+        <span class="ts-mode-name" id="lbl-ts-ko">Knockout</span>
+        <span class="ts-mode-sub" id="lbl-ts-ko-sub">Verlies = eruit</span>
+      </div>
+      <div class="ts-mode-btn" id="ts-mode-rr" onclick="setTournMode('rr')">
+        <span class="ts-mode-icon">🔄</span>
+        <span class="ts-mode-name" id="lbl-ts-rr">Competitie</span>
+        <span class="ts-mode-sub" id="lbl-ts-rr-sub">Iedereen speelt</span>
+      </div>
+    </div>
+    <div class="ts-label" id="lbl-ts-players">Aantal spelers</div>
+    <div class="ts-player-count">
+      <button class="ts-count-btn" onclick="changeTournPlayers(-1)">−</button>
+      <div class="ts-count-num" id="ts-count">4</div>
+      <button class="ts-count-btn" onclick="changeTournPlayers(1)">+</button>
+    </div>
+    <div class="ts-names-grid" id="ts-names"></div>
+    <button class="btn btn-p" id="btn-start-tourn" style="max-width:400px;background:linear-gradient(135deg,#f4d03f,#e6a800)" onclick="startTournament()">🏆 Start Toernooi</button>
+    <button class="btn btn-g" id="btn-tourn-back" style="margin-top:8px" onclick="showScreen('home')">← Terug</button>
+  </div>
+</div>
+
+<!-- BRACKET -->
+<div id="screen-bracket" class="screen">
+  <div class="bk-header">
+    <div>
+      <div class="bk-title" id="bk-title">🏆 Toernooi</div>
+      <div class="bk-subtitle" id="bk-subtitle"></div>
+    </div>
+    <button class="btn btn-g" id="btn-bracket-leave" onclick="if(confirm(L.ui.leaveTourn))goHome()">✕</button>
+  </div>
+  <div class="bk-body" id="bk-body"></div>
+</div>
+
+<!-- HISTORY -->
+<div id="screen-history" class="screen">
+  <div class="hist-header">
+    <div class="hist-title" id="lbl-hist">📋 Historie</div>
+    <button class="hist-clear" id="btn-hist-clear" onclick="clearHistory()">Wissen</button>
+  </div>
+  <div class="hist-list" id="hist-list"></div>
+  <div style="padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));flex-shrink:0">
+    <button class="btn btn-g" id="btn-hist-back" style="width:100%;max-width:100%" onclick="showScreen('home')">← Terug</button>
+  </div>
+</div>
+
+<!-- PLAYERS LIST -->
+<div id="screen-players" class="screen">
+  <div class="pl-header">
+    <div class="pl-title" id="lbl-players-title">👤 Spelers</div>
+    <button class="hist-clear" id="btn-players-clear" onclick="clearPlayers()">Wissen</button>
+  </div>
+  <div class="pl-list" id="pl-list"></div>
+  <div style="padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));flex-shrink:0">
+    <button class="btn btn-g" id="btn-players-back" style="width:100%;max-width:100%" onclick="showScreen('home')">← Terug</button>
+  </div>
+</div>
+
+<!-- PLAYER DETAIL -->
+<div id="screen-player-detail" class="screen">
+  <div class="pd-header">
+    <div class="pd-avatar" id="pd-avatar" onclick="openAvatarPicker()" style="cursor:pointer"></div>
+    <div style="flex:1">
+      <div class="pd-name" id="pd-name"></div>
+      <div style="font-size:10px;color:#333;letter-spacing:2px" id="pd-subtitle"></div>
+      <button class="pd-edit-avatar" onclick="openAvatarPicker()" id="btn-edit-avatar">✏️ embleem</button>
+    </div>
+    <button class="pd-delete" id="btn-delete-player" onclick="deleteCurrentPlayer()">🗑</button>
+  </div>
+  <div class="pd-body" id="pd-body"></div>
+  <div style="padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));flex-shrink:0">
+    <button class="btn btn-g" id="btn-pd-back" style="width:100%;max-width:100%" onclick="showPlayersScreen()">← Terug</button>
+  </div>
+</div>
+
+<!-- AVATAR PICKER -->
+<div class="av-overlay" id="av-overlay" onclick="if(event.target===this)closeAvatarPicker()">
+  <div class="av-sheet">
+    <div class="av-title" id="av-title">Kies Embleem</div>
+    <div class="av-grid" id="av-grid"></div>
+    <button class="av-cancel" id="btn-av-cancel" onclick="closeAvatarPicker()">Annuleren</button>
+  </div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   LANGUAGES
+═══════════════════════════════════════════════════ */
+var LANGS = {
+  nl: {
+    code: 'nl-NL',
+    ui: { tt:'Tafeltennis', bd:'Badminton', vb:'Volleybal', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Darts', cu:'Eigen Spel',
+      tr:'Team Rood', tb:'Team Blauw', start:'Start Wedstrijd', back:'← Terug',
+      tap:'Tik om punt', set:'Set', undo:'↩ Ongedaan', voice:'Spraak', voiceOn:'Luistert…',
+      newgame:'Nieuw Spel', pts:'Punten per set', margin:'Winmarge', setsw:'Sets om te winnen',
+      sof:'van', mp:'Match point', sp:'Set point', deuce:'Deuce', wins:'Wint de wedstrijd!',
+      replay:'🔄 Opnieuw', home:'🏠 Home', adlbl:'Advertentie', skip:'Overslaan ›',
+      hint:'Zeg "rood", "blauw" of teamnaam', nosr:'Gebruik Chrome voor spraak', off:'Spraak uit',
+      waiting:'wachten op spraak…', nomatch:'geen match',
+      micdenied:'❌ Microfoon geweigerd — klik 🔒 → Microfoon → Toestaan',
+      cl:'Taal wijzigen', splashtap:'Tik om te starten',
+      tourn:'Toernooi', tournMode:'Toernooi modus', myPresets:'Mijn presets', newPreset:'Nieuwe preset',
+      firstPreset:'Maak je eerste preset', customSettings:'Of zelf instellen',
+      player:'Speler', finale:'Finale', semifinal:'Halve Finale', quarterfinal:'Kwartfinale', round:'Ronde', champion:'Kampioen!',
+      hist:'Historie', histClear:'Wissen', histEmpty:'Nog geen wedstrijden gespeeld',
+      chooseSport:'Kies sport', mode:'Modus', playerCount:'Aantal spelers',
+      ko:'Knockout', koSub:'Verlies = eruit', rr:'Competitie', rrSub:'Iedereen speelt',
+      startTourn:'Start Toernooi', leaveTourn:'Toernooi verlaten?',
+      viewBracket:'Bekijk Bracket', nextMatch:'Volgende Match', players:'spelers',
+      play:'Speel', noSport:'Kies eerst een sport!',
+      players:'spelers', plTitle:'Spelers', plEmpty:'Nog geen wedstrijden gespeeld',
+      plClear:'Wissen', plWins:'Gewonnen', plLosses:'Verloren', plMatches:'Wedstrijden',
+      plStreak:'Beste reeks', plSport:'Meest gespeeld', plTough:'Lastigste tegenstander',
+      plRecent:'Recente wedstrijden', plWin:'Winst', plLoss:'Verlies', plVs:'vs',
+      avTitle:'Kies Embleem', avCancel:'Annuleren', editAvatar:'Embleem wijzigen', deletePl:'Speler verwijderen?' },
+    say: {
+      start: function(s,a,b){ return s+' gestart! '+a+' tegen '+b+'. Succes!'; },
+      score: function(n,a,b){ return n+' scoort! '+a+' - '+b; },
+      mp: function(n){ return '. Match point '+n+'!'; },
+      sp: function(n){ return '. Set point '+n+'!'; },
+      deuce: '. Deuce!',
+      setwon: function(n,i,a,b){ return n+' wint set '+i+'! Stand '+a+'-'+b; },
+      win: function(n){ return n+' wint de wedstrijd! Gefeliciteerd!'; },
+      vready: 'Spraakbediening aan. Zeg rood, blauw of de teamnaam. Vraag de stand of zeg ongedaan maken.',
+      stand: function(a,sa,b,sb,sets){ return 'De stand is '+a+' '+sa+', '+b+' '+sb+(sets?'. Sets: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Laatste punt ongedaan gemaakt! '+a+' - '+b+'.'; }
+    },
+    k0: ['rood','team 1','team een','links','eerste'],
+    k1: ['blauw','team 2','team twee','rechts','tweede'],
+    scoreQ: ['wat is de stand','stand','hoe staat het'],
+    undo: ['ongedaan','ongedaan maken','laatste punt','punt terug','terug']
+  },
+  en: {
+    code: 'en-US',
+    ui: { tt:'Table Tennis', bd:'Badminton', vb:'Volleyball', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Darts', cu:'Custom',
+      tr:'Team Red', tb:'Team Blue', start:'Start Match', back:'← Back',
+      tap:'Tap to score', set:'Set', undo:'↩ Undo', voice:'Voice', voiceOn:'Listening…',
+      newgame:'New Game', pts:'Points per set', margin:'Win by', setsw:'Sets to win',
+      sof:'of', mp:'Match point', sp:'Set point', deuce:'Deuce', wins:'Wins the match!',
+      replay:'🔄 Rematch', home:'🏠 Home', adlbl:'Advertisement', skip:'Skip ›',
+      hint:'Say "red", "blue" or team name', nosr:'Use Chrome for voice', off:'Voice off',
+      waiting:'waiting for speech…', nomatch:'no match',
+      micdenied:'❌ Mic denied — click 🔒 → Microphone → Allow',
+      cl:'Change language', splashtap:'Tap to start',
+      tourn:'Tournament', tournMode:'Tournament mode', myPresets:'My presets', newPreset:'New preset',
+      firstPreset:'Create your first preset', customSettings:'Or configure manually',
+      player:'Player', finale:'Final', semifinal:'Semi-Final', quarterfinal:'Quarter-Final', round:'Round', champion:'Champion!',
+      hist:'History', histClear:'Clear', histEmpty:'No matches played yet',
+      chooseSport:'Choose sport', mode:'Mode', playerCount:'Number of players',
+      ko:'Knockout', koSub:'Lose = out', rr:'Round Robin', rrSub:'Everyone plays',
+      startTourn:'Start Tournament', leaveTourn:'Leave tournament?',
+      viewBracket:'View Bracket', nextMatch:'Next Match', players:'players',
+      play:'Play', noSport:'Choose a sport first!',
+      players:'players', plTitle:'Players', plEmpty:'No matches played yet',
+      plClear:'Clear', plWins:'Won', plLosses:'Lost', plMatches:'Matches',
+      plStreak:'Best streak', plSport:'Most played', plTough:'Toughest opponent',
+      plRecent:'Recent matches', plWin:'Win', plLoss:'Loss', plVs:'vs',
+      avTitle:'Choose Emblem', avCancel:'Cancel', editAvatar:'Change emblem', deletePl:'Delete player?' },
+    say: {
+      start: function(s,a,b){ return s+' started! '+a+' vs '+b+'. Good luck!'; },
+      score: function(n,a,b){ return n+' scores! '+a+' - '+b; },
+      mp: function(n){ return '. Match point '+n+'!'; },
+      sp: function(n){ return '. Set point '+n+'!'; },
+      deuce: '. Deuce!',
+      setwon: function(n,i,a,b){ return n+' wins set '+i+'! '+a+'-'+b; },
+      win: function(n){ return n+' wins the match! Congratulations!'; },
+      vready: 'Voice control on. Say red, blue or the team name. Ask the score or say undo.',
+      stand: function(a,sa,b,sb,sets){ return 'The score is '+a+' '+sa+', '+b+' '+sb+(sets?'. Sets: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Last point undone! '+a+' - '+b+'.'; }
+    },
+    k0: ['red','team 1','team one','left','first','rood'],
+    k1: ['blue','team 2','team two','right','second','blauw'],
+    scoreQ: ['what is the score','whats the score','current score'],
+    undo: ['undo','undo last point','take back','last point','go back']
+  },
+  fr: {
+    code: 'fr-FR',
+    ui: { tt:'Tennis de table', bd:'Badminton', vb:'Volleyball', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Fléchettes', cu:'Perso',
+      tr:'Équipe Rouge', tb:'Équipe Bleue', start:'Démarrer', back:'← Retour',
+      tap:'Appuyer', set:'Set', undo:'↩ Annuler', voice:'Voix', voiceOn:'Écoute…',
+      newgame:'Nouveau', pts:'Points par set', margin:'Écart', setsw:'Sets à gagner',
+      sof:'sur', mp:'Balle de match', sp:'Balle de set', deuce:'Égalité', wins:'Gagne!',
+      replay:'🔄 Revanche', home:'🏠 Accueil', adlbl:'Publicité', skip:'Passer ›',
+      hint:'Dites "rouge", "bleu" ou nom d\'équipe', nosr:'Utilisez Chrome', off:'Voix off',
+      waiting:'attente…', nomatch:'pas de correspondance',
+      micdenied:'❌ Micro refusé — cliquez 🔒 → Micro → Autoriser',
+      cl:'Langue', splashtap:'Appuyer pour commencer',
+      tourn:'Tournoi', tournMode:'Mode tournoi', myPresets:'Mes presets', newPreset:'Nouveau preset',
+      firstPreset:'Créez votre premier preset', customSettings:'Ou configurer manuellement',
+      player:'Joueur', finale:'Finale', semifinal:'Demi-finale', quarterfinal:'Quart de finale', round:'Tour', champion:'Champion!',
+      hist:'Historique', histClear:'Effacer', histEmpty:'Aucun match joué',
+      chooseSport:'Choisir sport', mode:'Mode', playerCount:'Nombre de joueurs',
+      ko:'Élimination', koSub:'Défaite = éliminé', rr:'Championnat', rrSub:'Tout le monde joue',
+      startTourn:'Démarrer Tournoi', leaveTourn:'Quitter le tournoi?',
+      viewBracket:'Voir Tableau', nextMatch:'Match suivant', players:'joueurs',
+      play:'Jouer', noSport:'Choisissez un sport d\'abord!',
+      players:'joueurs', plTitle:'Joueurs', plEmpty:'Aucun match joué',
+      plClear:'Effacer', plWins:'Victoires', plLosses:'Défaites', plMatches:'Matchs',
+      plStreak:'Meilleure série', plSport:'Plus joué', plTough:'Adversaire difficile',
+      plRecent:'Matchs récents', plWin:'Victoire', plLoss:'Défaite', plVs:'vs',
+      avTitle:'Choisir Emblème', avCancel:'Annuler', editAvatar:"Changer l'emblème", deletePl:'Supprimer le joueur?' },
+    say: {
+      start: function(s,a,b){ return s+'! '+a+' contre '+b+'!'; },
+      score: function(n,a,b){ return n+' marque! '+a+'-'+b; },
+      mp: function(n){ return '. Balle de match '+n+'!'; },
+      sp: function(n){ return '. Balle de set '+n+'!'; },
+      deuce: '. Égalité!',
+      setwon: function(n,i){ return n+' gagne set '+i+'!'; },
+      win: function(n){ return n+' gagne! Félicitations!'; },
+      vready: 'Commande vocale. Dites rouge, bleu ou le nom. Demandez le score ou dites annuler.',
+      stand: function(a,sa,b,sb,sets){ return 'Le score est '+a+' '+sa+', '+b+' '+sb+(sets?'. Sets: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Dernier point annule! '+a+' - '+b+'.'; }
+    },
+    k0: ['rouge','équipe 1','premier','gauche'],
+    k1: ['bleu','bleue','équipe 2','deuxième','droite'],
+    scoreQ: ['quel est le score','score','le score'],
+    undo: ['annuler','annuler dernier point','dernier point','retour']
+  },
+  de: {
+    code: 'de-DE',
+    ui: { tt:'Tischtennis', bd:'Badminton', vb:'Volleyball', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Darts', cu:'Eigenes',
+      tr:'Team Rot', tb:'Team Blau', start:'Starten', back:'← Zurück',
+      tap:'Tippen', set:'Satz', undo:'↩ Rückgängig', voice:'Sprache', voiceOn:'Hört zu…',
+      newgame:'Neues Spiel', pts:'Punkte je Satz', margin:'Vorsprung', setsw:'Sätze zum Sieg',
+      sof:'von', mp:'Matchball', sp:'Satzball', deuce:'Einstand', wins:'Gewinnt!',
+      replay:'🔄 Revanche', home:'🏠 Home', adlbl:'Werbung', skip:'Überspringen ›',
+      hint:'Sagen Sie "rot", "blau" oder Teamname', nosr:'Chrome verwenden', off:'Sprache aus',
+      waiting:'warte…', nomatch:'kein Treffer',
+      micdenied:'❌ Mikrofon verweigert — 🔒 → Mikrofon → Erlauben',
+      cl:'Sprache ändern', splashtap:'Tippen zum Starten',
+      tourn:'Turnier', tournMode:'Turniermodus', myPresets:'Meine Presets', newPreset:'Neues Preset',
+      firstPreset:'Erstes Preset erstellen', customSettings:'Oder manuell einstellen',
+      player:'Spieler', finale:'Finale', semifinal:'Halbfinale', quarterfinal:'Viertelfinale', round:'Runde', champion:'Meister!',
+      hist:'Verlauf', histClear:'Löschen', histEmpty:'Noch keine Spiele gespielt',
+      chooseSport:'Sport wählen', mode:'Modus', playerCount:'Spieleranzahl',
+      ko:'K.O.', koSub:'Verlieren = raus', rr:'Ligamodus', rrSub:'Jeder spielt',
+      startTourn:'Turnier starten', leaveTourn:'Turnier verlassen?',
+      viewBracket:'Bracket ansehen', nextMatch:'Nächstes Spiel', players:'Spieler',
+      play:'Spielen', noSport:'Wähle zuerst einen Sport!',
+      players:'Spieler', plTitle:'Spieler', plEmpty:'Noch keine Spiele gespielt',
+      plClear:'Löschen', plWins:'Gewonnen', plLosses:'Verloren', plMatches:'Spiele',
+      plStreak:'Beste Serie', plSport:'Meist gespielt', plTough:'Schwerster Gegner',
+      plRecent:'Letzte Spiele', plWin:'Sieg', plLoss:'Niederlage', plVs:'vs',
+      avTitle:'Emblem wählen', avCancel:'Abbrechen', editAvatar:'Emblem ändern', deletePl:'Spieler löschen?' },
+    say: {
+      start: function(s,a,b){ return s+'! '+a+' gegen '+b+'. Viel Erfolg!'; },
+      score: function(n,a,b){ return n+' Punkt! '+a+'-'+b; },
+      mp: function(n){ return '. Matchball '+n+'!'; },
+      sp: function(n){ return '. Satzball '+n+'!'; },
+      deuce: '. Einstand!',
+      setwon: function(n,i){ return n+' gewinnt Satz '+i+'!'; },
+      win: function(n){ return n+' gewinnt! Glückwunsch!'; },
+      vready: 'Sprachsteuerung. Rot, blau oder Teamname. Spielstand oder rueckgaengig sagen.',
+      stand: function(a,sa,b,sb,sets){ return 'Der Stand ist '+a+' '+sa+', '+b+' '+sb+(sets?'. Saetze: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Letzter Punkt rueckgaengig! '+a+' - '+b+'.'; }
+    },
+    k0: ['rot','roten','team 1','eins','links'],
+    k1: ['blau','blauen','team 2','zwei','rechts'],
+    scoreQ: ['wie ist der stand','stand','spielstand'],
+    undo: ['rueckgaengig','letzter punkt','zurueck','punkt zurueck']
+  },
+  es: {
+    code: 'es-ES',
+    ui: { tt:'Tenis de Mesa', bd:'Bádminton', vb:'Voleibol', sq:'Squash', pd:'Pádel', pk:'Pickleball', tn:'Tenis', pe:'Petanca', dt:'Dardos', cu:'Juego Propio',
+      tr:'Equipo Rojo', tb:'Equipo Azul', start:'Iniciar Partido', back:'← Volver',
+      tap:'Toca para anotar', set:'Set', undo:'↩ Deshacer', voice:'Voz', voiceOn:'Escuchando…',
+      newgame:'Nuevo Juego', pts:'Puntos por set', margin:'Ventaja', setsw:'Sets para ganar',
+      sof:'de', mp:'Bola de partido', sp:'Bola de set', deuce:'Iguales', wins:'¡Gana el partido!',
+      replay:'🔄 Revancha', home:'🏠 Inicio', adlbl:'Publicidad', skip:'Saltar ›',
+      hint:'Di "rojo", "azul" o nombre del equipo', nosr:'Usa Chrome para voz', off:'Voz apagada',
+      waiting:'esperando voz…', nomatch:'sin coincidencia',
+      micdenied:'❌ Micrófono denegado — haz clic en 🔒 → Micrófono → Permitir',
+      cl:'Cambiar idioma', splashtap:'Toca para comenzar',
+      tourn:'Torneo', tournMode:'Modo torneo', myPresets:'Mis presets', newPreset:'Nuevo preset',
+      firstPreset:'Crea tu primer preset', customSettings:'O configurar manualmente',
+      player:'Jugador', finale:'Final', semifinal:'Semifinal', quarterfinal:'Cuartos de final', round:'Ronda', champion:'¡Campeón!',
+      hist:'Historial', histClear:'Borrar', histEmpty:'Aún no se han jugado partidos',
+      chooseSport:'Elegir deporte', mode:'Modo', playerCount:'Número de jugadores',
+      ko:'Eliminación', koSub:'Perder = fuera', rr:'Liga', rrSub:'Todos juegan',
+      startTourn:'Iniciar Torneo', leaveTourn:'¿Salir del torneo?',
+      viewBracket:'Ver Cuadro', nextMatch:'Siguiente Partido', players:'jugadores',
+      play:'Jugar', noSport:'¡Elige un deporte primero!',
+      players:'jugadores', plTitle:'Jugadores', plEmpty:'Aún no se han jugado partidos',
+      plClear:'Borrar', plWins:'Ganados', plLosses:'Perdidos', plMatches:'Partidos',
+      plStreak:'Mejor racha', plSport:'Más jugado', plTough:'Rival más difícil',
+      plRecent:'Partidos recientes', plWin:'Victoria', plLoss:'Derrota', plVs:'vs',
+      avTitle:'Elegir Emblema', avCancel:'Cancelar', editAvatar:'Cambiar emblema', deletePl:'¿Eliminar jugador?' },
+    say: {
+      start: function(s,a,b){ return '¡'+s+' iniciado! '+a+' contra '+b+'. ¡Buena suerte!'; },
+      score: function(n,a,b){ return '¡'+n+' anota! '+a+' - '+b; },
+      mp: function(n){ return '. ¡Bola de partido '+n+'!'; },
+      sp: function(n){ return '. ¡Bola de set '+n+'!'; },
+      deuce: '. ¡Iguales!',
+      setwon: function(n,i,a,b){ return n+' gana el set '+i+'! '+a+'-'+b; },
+      win: function(n){ return '¡'+n+' gana el partido! ¡Enhorabuena!'; },
+      vready: 'Control por voz activo. Di rojo, azul o el nombre. Pregunta el marcador o di deshacer.',
+      stand: function(a,sa,b,sb,sets){ return 'El marcador es '+a+' '+sa+', '+b+' '+sb+(sets?'. Sets: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Ultimo punto deshecho! '+a+' - '+b+'.'; }
+    },
+    k0: ['rojo','equipo 1','uno','izquierda','primero'],
+    k1: ['azul','equipo 2','dos','derecha','segundo'],
+    scoreQ: ['marcador','cual es el marcador','como vamos'],
+    undo: ['deshacer','deshacer ultimo punto','ultimo punto','atras']
+  },
+  it: {
+    code: 'it-IT',
+    ui: { tt:'Ping Pong', bd:'Badminton', vb:'Pallavolo', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Freccette', cu:'Gioco Libero',
+      tr:'Squadra Rossa', tb:'Squadra Blu', start:'Inizia Partita', back:'← Indietro',
+      tap:'Tocca per punto', set:'Set', undo:'↩ Annulla', voice:'Voce', voiceOn:'Ascolto…',
+      newgame:'Nuovo Gioco', pts:'Punti per set', margin:'Vantaggio', setsw:'Set per vincere',
+      sof:'su', mp:'Match point', sp:'Set point', deuce:'Parità', wins:'Vince la partita!',
+      replay:'🔄 Rivincita', home:'🏠 Home', adlbl:'Pubblicità', skip:'Salta ›',
+      hint:'Di\' "rosso", "blu" o nome squadra', nosr:'Usa Chrome per la voce', off:'Voce spenta',
+      waiting:'in attesa…', nomatch:'nessuna corrispondenza',
+      micdenied:'❌ Microfono negato — clicca 🔒 → Microfono → Consenti',
+      cl:'Cambia lingua', splashtap:'Tocca per iniziare',
+      tourn:'Torneo', tournMode:'Modalità torneo', myPresets:'I miei preset', newPreset:'Nuovo preset',
+      firstPreset:'Crea il tuo primo preset', customSettings:'O configura manualmente',
+      player:'Giocatore', finale:'Finale', semifinal:'Semifinale', quarterfinal:'Quarti di finale', round:'Round', champion:'Campione!',
+      hist:'Storico', histClear:'Cancella', histEmpty:'Nessuna partita giocata',
+      chooseSport:'Scegli sport', mode:'Modalità', playerCount:'Numero di giocatori',
+      ko:'Eliminazione', koSub:'Perdi = fuori', rr:'Girone', rrSub:'Tutti giocano',
+      startTourn:'Avvia Torneo', leaveTourn:'Lasciare il torneo?',
+      viewBracket:'Vedi Tabellone', nextMatch:'Prossima Partita', players:'giocatori',
+      play:'Gioca', noSport:'Scegli prima uno sport!',
+      players:'giocatori', plTitle:'Giocatori', plEmpty:'Nessuna partita giocata',
+      plClear:'Cancella', plWins:'Vinte', plLosses:'Perse', plMatches:'Partite',
+      plStreak:'Miglior serie', plSport:'Più giocato', plTough:'Avversario più duro',
+      plRecent:'Partite recenti', plWin:'Vittoria', plLoss:'Sconfitta', plVs:'vs',
+      avTitle:'Scegli Emblema', avCancel:'Annulla', editAvatar:'Cambia emblema', deletePl:'Eliminare il giocatore?' },
+    say: {
+      start: function(s,a,b){ return s+' iniziato! '+a+' contro '+b+'. In bocca al lupo!'; },
+      score: function(n,a,b){ return n+' segna! '+a+' - '+b; },
+      mp: function(n){ return '. Match point '+n+'!'; },
+      sp: function(n){ return '. Set point '+n+'!'; },
+      deuce: '. Parità!',
+      setwon: function(n,i,a,b){ return n+' vince il set '+i+'! '+a+'-'+b; },
+      win: function(n){ return n+' vince la partita! Congratulazioni!'; },
+      vready: 'Controllo vocale attivo. Di rosso, blu o il nome. Chiedi il punteggio o di annulla.',
+      stand: function(a,sa,b,sb,sets){ return 'Il punteggio e '+a+' '+sa+', '+b+' '+sb+(sets?'. Set: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Ultimo punto annullato! '+a+' - '+b+'.'; }
+    },
+    k0: ['rosso','squadra 1','uno','sinistra','primo'],
+    k1: ['blu','squadra 2','due','destra','secondo'],
+    scoreQ: ['punteggio','qual e il punteggio','come siamo'],
+    undo: ['annulla','annulla ultimo punto','ultimo punto','indietro']
+  },
+  no: {
+    code: 'nb-NO',
+    ui: { tt:'Bordtennis', bd:'Badminton', vb:'Volleyball', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Darts', cu:'Eget Spill',
+      tr:'Rødt Lag', tb:'Blått Lag', start:'Start Kamp', back:'← Tilbake',
+      tap:'Trykk for poeng', set:'Sett', undo:'↩ Angre', voice:'Stemme', voiceOn:'Lytter…',
+      newgame:'Ny Kamp', pts:'Poeng per sett', margin:'Vinnermargin', setsw:'Sett for å vinne',
+      sof:'av', mp:'Matchball', sp:'Settball', deuce:'Likt', wins:'Vinner kampen!',
+      replay:'🔄 Revansje', home:'🏠 Hjem', adlbl:'Reklame', skip:'Hopp over ›',
+      hint:'Si "rød", "blå" eller lagnavn', nosr:'Bruk Chrome for tale', off:'Tale av',
+      waiting:'venter på tale…', nomatch:'ingen treff',
+      micdenied:'❌ Mikrofon avvist — klikk 🔒 → Mikrofon → Tillat',
+      cl:'Bytt språk', splashtap:'Trykk for å starte',
+      tourn:'Turnering', tournMode:'Turneringsmodus', myPresets:'Mine presets', newPreset:'Ny preset',
+      firstPreset:'Lag ditt første preset', customSettings:'Eller konfigurer manuelt',
+      player:'Spiller', finale:'Finale', semifinal:'Semifinale', quarterfinal:'Kvartfinale', round:'Runde', champion:'Mester!',
+      hist:'Historikk', histClear:'Slett', histEmpty:'Ingen kamper spilt ennå',
+      chooseSport:'Velg sport', mode:'Modus', playerCount:'Antall spillere',
+      ko:'Knockout', koSub:'Tap = ute', rr:'Serie', rrSub:'Alle spiller',
+      startTourn:'Start Turnering', leaveTourn:'Forlate turneringen?',
+      viewBracket:'Se Bracket', nextMatch:'Neste Kamp', players:'spillere',
+      play:'Spill', noSport:'Velg en sport først!',
+      players:'spillere', plTitle:'Spillere', plEmpty:'Ingen kamper spilt ennå',
+      plClear:'Slett', plWins:'Vunnet', plLosses:'Tapt', plMatches:'Kamper',
+      plStreak:'Beste rekke', plSport:'Mest spilt', plTough:'Tøffeste motstander',
+      plRecent:'Siste kamper', plWin:'Seier', plLoss:'Tap', plVs:'vs',
+      avTitle:'Velg Emblem', avCancel:'Avbryt', editAvatar:'Endre emblem', deletePl:'Slette spiller?' },
+    say: {
+      start: function(s,a,b){ return s+' startet! '+a+' mot '+b+'. Lykke til!'; },
+      score: function(n,a,b){ return n+' scorer! '+a+' - '+b; },
+      mp: function(n){ return '. Matchball '+n+'!'; },
+      sp: function(n){ return '. Settball '+n+'!'; },
+      deuce: '. Likt!',
+      setwon: function(n,i,a,b){ return n+' vinner sett '+i+'! '+a+'-'+b; },
+      win: function(n){ return n+' vinner kampen! Gratulerer!'; },
+      vready: 'Stemmekontroll aktiv. Si rød, blå eller lagnavnet. Spør om stillingen eller si angre.',
+      stand: function(a,sa,b,sb,sets){ return 'Stillingen er '+a+' '+sa+', '+b+' '+sb+(sets?'. Sett: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Siste poeng angret! '+a+' - '+b+'.'; }
+    },
+    k0: ['rød','rødt','lag 1','en','venstre','første'],
+    k1: ['blå','blått','lag 2','to','høyre','andre'],
+    scoreQ: ['stillingen','poengstilling'],
+    undo: ['angre','angre siste poeng','siste poeng','tilbake']
+  },
+  sv: {
+    code: 'sv-SE',
+    ui: { tt:'Bordtennis', bd:'Badminton', vb:'Volleyboll', sq:'Squash', pd:'Padel', pk:'Pickleball', tn:'Tennis', pe:'Pétanque', dt:'Dart', cu:'Eget Spel',
+      tr:'Röda Laget', tb:'Blå Laget', start:'Starta Match', back:'← Tillbaka',
+      tap:'Tryck för poäng', set:'Set', undo:'↩ Ångra', voice:'Röst', voiceOn:'Lyssnar…',
+      newgame:'Nytt Spel', pts:'Poäng per set', margin:'Vinstmarginal', setsw:'Set för att vinna',
+      sof:'av', mp:'Matchboll', sp:'Setboll', deuce:'Lika', wins:'Vinner matchen!',
+      replay:'🔄 Revansch', home:'🏠 Hem', adlbl:'Reklam', skip:'Hoppa över ›',
+      hint:'Säg "rött", "blå" eller lagnamn', nosr:'Använd Chrome för röst', off:'Röst av',
+      waiting:'väntar på tal…', nomatch:'ingen träff',
+      micdenied:'❌ Mikrofon nekad — klicka 🔒 → Mikrofon → Tillåt',
+      cl:'Byt språk', splashtap:'Tryck för att börja',
+      tourn:'Turnering', tournMode:'Turneringsläge', myPresets:'Mina presets', newPreset:'Ny preset',
+      firstPreset:'Skapa din första preset', customSettings:'Eller konfigurera manuellt',
+      player:'Spelare', finale:'Finale', semifinal:'Semifinal', quarterfinal:'Kvartsfinal', round:'Omgång', champion:'Mästare!',
+      hist:'Historik', histClear:'Rensa', histEmpty:'Inga matcher spelade än',
+      chooseSport:'Välj sport', mode:'Läge', playerCount:'Antal spelare',
+      ko:'Knockout', koSub:'Förlust = ute', rr:'Seriespel', rrSub:'Alla spelar',
+      startTourn:'Starta Turnering', leaveTourn:'Lämna turneringen?',
+      viewBracket:'Se Bracket', nextMatch:'Nästa Match', players:'spelare',
+      play:'Spela', noSport:'Välj en sport först!',
+      players:'spelare', plTitle:'Spelare', plEmpty:'Inga matcher spelade än',
+      plClear:'Rensa', plWins:'Vunna', plLosses:'Förlorade', plMatches:'Matcher',
+      plStreak:'Bästa svit', plSport:'Mest spelat', plTough:'Tuffaste motståndare',
+      plRecent:'Senaste matcher', plWin:'Vinst', plLoss:'Förlust', plVs:'vs',
+      avTitle:'Välj Emblem', avCancel:'Avbryt', editAvatar:'Ändra emblem', deletePl:'Ta bort spelare?' },
+    say: {
+      start: function(s,a,b){ return s+' startat! '+a+' mot '+b+'. Lycka till!'; },
+      score: function(n,a,b){ return n+' poängar! '+a+' - '+b; },
+      mp: function(n){ return '. Matchboll '+n+'!'; },
+      sp: function(n){ return '. Setboll '+n+'!'; },
+      deuce: '. Lika!',
+      setwon: function(n,i,a,b){ return n+' vinner set '+i+'! '+a+'-'+b; },
+      win: function(n){ return n+' vinner matchen! Grattis!'; },
+      vready: 'Röststyrning aktiv. Säg rött, blå eller lagnamnet. Fråga ställningen eller säg ångra.',
+      stand: function(a,sa,b,sb,sets){ return 'Ställningen är '+a+' '+sa+', '+b+' '+sb+(sets?'. Set: '+sets:'')+'.'; },
+      undod: function(a,b){ return 'Senaste poängen ångrad! '+a+' - '+b+'.'; }
+    },
+    k0: ['rött','röda','lag 1','ett','vänster','första'],
+    k1: ['blå','blåa','lag 2','två','höger','andra'],
+    scoreQ: ['ställningen','poängställning'],
+    undo: ['ångra','ångra senaste','senaste poäng','tillbaka']
+  }
+};
+
+var SP = {
+  tt: { icon:'🏓', pointsToWin:11, winBy:2, setsToWin:2, totalSets:3, lastSetPoints:11 },
+  bd: { icon:'🏸', pointsToWin:21, winBy:2, setsToWin:2, totalSets:3, lastSetPoints:21, maxPoints:30 },
+  vb: { icon:'🏐', pointsToWin:25, winBy:2, setsToWin:3, totalSets:5, lastSetPoints:15 },
+  sq: { icon:'🎱', pointsToWin:11, winBy:2, setsToWin:3, totalSets:5, lastSetPoints:11 },
+  pd: { icon:'🏸', pointsToWin:6,  winBy:2, setsToWin:2, totalSets:3, lastSetPoints:6, maxPoints:7 },
+  pk: { icon:'🥒', pointsToWin:11, winBy:2, setsToWin:2, totalSets:3, lastSetPoints:11 },
+  tn: { icon:'🎾', mode:'tennis', setsToWin:2, totalSets:3 },
+  pe: { icon:'🪨', pointsToWin:13, winBy:1, setsToWin:1, totalSets:1, lastSetPoints:13 },
+  dt: { icon:'🎯', mode:'darts', startScore:501, legsToWin:3 },
+  cu: { icon:'⚙️', pointsToWin:10, winBy:1, setsToWin:1, totalSets:1, lastSetPoints:10 }
+};
+
+var L = LANGS.nl;
+var G = { sport:null, key:null, names:['Team Rood','Team Blauw'], scores:[0,0], sets:[0,0], curSet:0, winner:null, hist:[] };
+var voiceOn = false;
+var COOL = 2000;
+
+/* ═══ SPLASH BALLS ═══ */
+(function(){
+  var em = ['🏓','🏸','🏐','🎾','⚽','🏀','🏒','🎱'];
+  var w = document.getElementById('balls');
+  for(var i=0; i<20; i++){
+    var d = document.createElement('div');
+    d.className = 'ball';
+    d.textContent = em[i % em.length];
+    var l = Math.random()*95, dur = 4+Math.random()*6, del = -Math.random()*8, sz = 1.3+Math.random()*1.5;
+    d.style.cssText = 'left:'+l+'%;animation-duration:'+dur+'s;animation-delay:'+del+'s;font-size:'+sz+'rem';
+    w.appendChild(d);
+  }
+})();
+
+var splashGone = false;
+var splashMusicPlaying = false;
+
+function tryPlaySplashMusic() {
+  if(splashMusicPlaying) return;
+  splashMusicPlaying = true;
+  playSplashMusic();
+}
+
+function splashNext(){
+  if(splashGone) return;
+  splashGone = true;
+  tryPlaySplashMusic();
+  setTimeout(function(){ stopSplashMusic(); showScreen('lang'); }, 1600);
+}
+
+// Probeer muziek direct te starten bij laden — werkt als autoplay toegestaan is
+// Op browsers die autoplay blokkeren start het alsnog bij de eerste tik
+setTimeout(function(){ try{ tryPlaySplashMusic(); }catch(e){} }, 100);
+
+/* ═══════════════════════════════════════════════════
+   MUSIC — built with Web Audio API (no files needed)
+═══════════════════════════════════════════════════ */
+var splashAC = null;
+var winAC = null;
+
+// Helper: play a single oscillator note
+function playNote(AC, dest, freq, type, startTime, duration, peakGain) {
+  var o = AC.createOscillator();
+  var g = AC.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0, startTime);
+  g.gain.linearRampToValueAtTime(peakGain, startTime + 0.02);
+  g.gain.setValueAtTime(peakGain, startTime + duration - 0.04);
+  g.gain.linearRampToValueAtTime(0, startTime + duration);
+  o.connect(g);
+  g.connect(dest);
+  o.start(startTime);
+  o.stop(startTime + duration + 0.05);
+}
+
+// Helper: short kick drum
+function playKick(AC, dest, startTime) {
+  var o = AC.createOscillator();
+  var g = AC.createGain();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(160, startTime);
+  o.frequency.exponentialRampToValueAtTime(40, startTime + 0.12);
+  g.gain.setValueAtTime(0.4, startTime);
+  g.gain.exponentialRampToValueAtTime(0.001, startTime + 0.18);
+  o.connect(g);
+  g.connect(dest);
+  o.start(startTime);
+  o.stop(startTime + 0.22);
+}
+
+// Helper: hi-hat click
+function playHat(AC, dest, startTime, vol) {
+  var buf = AC.createBuffer(1, AC.sampleRate * 0.05, AC.sampleRate);
+  var data = buf.getChannelData(0);
+  for(var i=0; i<data.length; i++) data[i] = (Math.random()*2-1);
+  var src = AC.createBufferSource();
+  src.buffer = buf;
+  var hp = AC.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 8000;
+  var g = AC.createGain();
+  g.gain.setValueAtTime(vol, startTime);
+  g.gain.exponentialRampToValueAtTime(0.001, startTime + 0.05);
+  src.connect(hp); hp.connect(g); g.connect(dest);
+  src.start(startTime);
+  src.stop(startTime + 0.06);
+}
+
+function playSplashMusic() {
+  try {
+    splashAC = new (window.AudioContext || window.webkitAudioContext)();
+    var AC = splashAC;
+    var master = AC.createGain();
+    master.gain.value = 0.22;
+    master.connect(AC.destination);
+
+    // Punchy synth hit
+    function synthHit(freq, st, dur, vol) {
+      var o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+      o.type = 'sawtooth'; o.frequency.value = freq;
+      f.type = 'lowpass'; f.frequency.value = freq * 4; f.Q.value = 2;
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol, st + 0.012);
+      g.gain.exponentialRampToValueAtTime(vol * 0.6, st + 0.06);
+      g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+      o.connect(f); f.connect(g); g.connect(master);
+      o.start(st); o.stop(st + dur + 0.05);
+    }
+
+    // Bright marimba ping
+    function ping(freq, st, dur, vol) {
+      [[1,1.0],[2.76,0.3],[5.5,0.08]].forEach(function(h){
+        var o = AC.createOscillator(), g = AC.createGain();
+        o.type = 'sine'; o.frequency.value = freq * h[0];
+        g.gain.setValueAtTime(0, st);
+        g.gain.linearRampToValueAtTime(vol * h[1], st + 0.006);
+        g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+        o.connect(g); g.connect(master);
+        o.start(st); o.stop(st + dur + 0.05);
+      });
+    }
+
+    // Kick drum
+    function kick(st) {
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(180, st);
+      o.frequency.exponentialRampToValueAtTime(40, st + 0.1);
+      g.gain.setValueAtTime(0.5, st);
+      g.gain.exponentialRampToValueAtTime(0.001, st + 0.2);
+      o.connect(g); g.connect(master);
+      o.start(st); o.stop(st + 0.25);
+    }
+
+    // Snare crack
+    function snare(st) {
+      var buf = AC.createBuffer(1, AC.sampleRate * 0.12, AC.sampleRate);
+      var d = buf.getChannelData(0);
+      for(var i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * Math.exp(-i/(AC.sampleRate*0.04));
+      var src = AC.createBufferSource(); src.buffer = buf;
+      var bp = AC.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=2200; bp.Q.value=0.8;
+      var g = AC.createGain(); g.gain.setValueAtTime(0.35, st); g.gain.exponentialRampToValueAtTime(0.001, st+0.12);
+      src.connect(bp); bp.connect(g); g.connect(master);
+      src.start(st); src.stop(st+0.13);
+    }
+
+    var t = AC.currentTime + 0.05;
+
+    // === CATCHY SPORTS JINGLE — D major, ~1.6s ===
+    // D4=293.66, E4=329.63, F#4=369.99, G4=392, A4=440, B4=493.88, D5=587.33, F#5=739.99, A5=880
+    var D4=293.66, E4=329.63, Fs4=369.99, G4=392, A4=440, B4=493.88, D5=587.33, Fs5=739.99, A5=880;
+
+    // Driving beat: kick + snare
+    [0, 0.4, 0.8, 1.2].forEach(function(b){ kick(t+b); });
+    [0.2, 0.6, 1.0, 1.4].forEach(function(b){ snare(t+b); });
+
+    // Bass synth hits
+    [[D4*0.5,0,0.18],[G4*0.5,0.4,0.14],[A4*0.5,0.8,0.14],[D4*0.5,1.2,0.18]].forEach(function(n){
+      synthHit(n[0], t+n[1], n[2], 0.28);
+    });
+
+    // Melody: short punchy ascending phrase — D E F# A | D5 (landing)
+    var mel = [
+      [D4, 0.00, 0.14, 0.32],
+      [E4, 0.16, 0.12, 0.30],
+      [Fs4,0.30, 0.12, 0.30],
+      [A4, 0.44, 0.20, 0.36],
+      [D5, 0.68, 0.18, 0.38],
+      [A4, 0.88, 0.12, 0.28],
+      [Fs5,1.02, 0.20, 0.40],  // high point
+      [D5, 1.24, 0.14, 0.32],
+      [A5, 1.40, 0.22, 0.45],  // big finish note
+    ];
+    mel.forEach(function(n){ ping(n[0], t+n[1], n[2], n[3]); });
+
+    // Harmony layer under melody
+    [[Fs4,0,0.35,0.12],[D4,0.44,0.35,0.14],[Fs4,0.68,0.5,0.16],[A4,1.24,0.4,0.18]].forEach(function(n){
+      synthHit(n[0], t+n[1], n[2], n[3]);
+    });
+
+  } catch(e) {}
+}
+
+function stopSplashMusic() {
+  if(splashAC) { try { splashAC.close(); } catch(e){} splashAC = null; }
+}
+
+function playWinMusic() {
+  try {
+    winAC = new (window.AudioContext || window.webkitAudioContext)();
+    var AC = winAC;
+    var master = AC.createGain();
+    master.gain.value = 0.18;
+    master.connect(AC.destination);
+
+    // Piano-like (same helper concept inline)
+    function pno(freq, st, dur, vol) {
+      [1, 2, 3, 4].forEach(function(h, i) {
+        var gv = vol * [1, 0.38, 0.16, 0.07][i];
+        var o = AC.createOscillator(), g = AC.createGain();
+        o.type = 'sine'; o.frequency.value = freq * h;
+        g.gain.setValueAtTime(0, st);
+        g.gain.linearRampToValueAtTime(gv, st + 0.012);
+        g.gain.exponentialRampToValueAtTime(gv * 0.5, st + 0.08);
+        g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+        o.connect(g); g.connect(master);
+        o.start(st); o.stop(st + dur + 0.05);
+      });
+    }
+
+    // Strings swell
+    function str(freq, st, dur, vol) {
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol, st + 0.25);
+      g.gain.setValueAtTime(vol, st + dur - 0.3);
+      g.gain.linearRampToValueAtTime(0, st + dur);
+      o.connect(g); g.connect(master);
+      o.start(st); o.stop(st + dur + 0.05);
+    }
+
+    // Trumpet-ish: sawtooth + lowpass for warmth
+    function brass(freq, st, dur, vol) {
+      var o = AC.createOscillator(), f = AC.createBiquadFilter(), g = AC.createGain();
+      o.type = 'sawtooth'; o.frequency.value = freq;
+      f.type = 'lowpass'; f.frequency.value = freq * 5; f.Q.value = 1.2;
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol, st + 0.05);
+      g.gain.setValueAtTime(vol, st + dur - 0.06);
+      g.gain.linearRampToValueAtTime(0, st + dur);
+      o.connect(f); f.connect(g); g.connect(master);
+      o.start(st); o.stop(st + dur + 0.05);
+    }
+
+    var t = AC.currentTime;
+    // C major — classic heroic key
+    var C4=261.63, E4=329.63, G4=392.00, C5=523.25, E5=659.25, G5=784.00, C6=1046.50;
+    var F4=349.23, A4=440.00, F5=698.46, A5=880.00, B4=493.88, D5=587.33;
+
+    // === PART 1: Rising fanfare (0–2s) ===
+    // Brass ascending
+    [[C4,0,.28],[E4,.3,.28],[G4,.6,.28],[C5,.92,.42],[E5,1.38,.42],[G5,1.84,.28],[C6,2.14,.9]].forEach(function(n){
+      brass(n[0], t+n[1], n[2], 0.18);
+      pno(n[0], t+n[1], n[2]+0.1, 0.14);
+    });
+
+    // Strings swell under fanfare
+    [[C4,0,2.0],[E4,0,2.0],[G4,0,2.0]].forEach(function(n){
+      str(n[0], t+n[1], n[2], 0.07);
+    });
+
+    // === PART 2: Resolution chord (3–4.5s) ===
+    // Big C major chord — all voices together
+    [[C4,3.1,1.4],[E4,3.1,1.4],[G4,3.1,1.4],[C5,3.1,1.4]].forEach(function(n){
+      brass(n[0], t+n[1], n[2], 0.14);
+      str(n[0], t+n[1], n[2], 0.08);
+      pno(n[0]*2, t+n[1], n[2], 0.1);
+    });
+
+    // === PART 3: Victorious final flourish (4.6–6s) ===
+    // Descending run then final chord
+    [[C6,4.6,.16],[B4,4.78,.16],[A5,4.96,.16],[G5,5.14,.16],[F5,5.32,.16],[E5,5.5,.16],[D5,5.68,.16],[C5,5.88,.9]].forEach(function(n){
+      pno(n[0], t+n[1], n[2], 0.18);
+    });
+    // Final big chord
+    [[C4,5.9,1.2],[E4,5.9,1.2],[G4,5.9,1.2],[C5,5.9,1.2],[E5,5.9,1.2]].forEach(function(n){
+      brass(n[0], t+n[1], n[2], 0.16);
+      str(n[0], t+n[1], n[2], 0.1);
+    });
+
+  } catch(e) {}
+}
+
+function stopWinMusic() {
+  if(winAC) { try { winAC.close(); } catch(e){} winAC = null; }
+}
+
+/* ═══ CONFETTI ═══ */
+var confRaf = null;
+var confParticles = [];
+var CONF_COLORS = ['#e63946','#4361ee','#f4d03f','#2ecc71','#ff6b6b','#a8e6cf','#ffffff','#ff8c00','#c77dff'];
+
+function startConfetti() {
+  var canvas = document.getElementById('confetti-canvas');
+  canvas.classList.add('show');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  var ctx = canvas.getContext('2d');
+  confParticles = [];
+  for(var i=0; i<160; i++){
+    confParticles.push({
+      x: Math.random() * canvas.width,
+      y: -20 - Math.random() * canvas.height * 0.6,
+      vx: (Math.random() - 0.5) * 3.5,
+      vy: 1.8 + Math.random() * 4,
+      rot: Math.random() * 360,
+      vrot: (Math.random() - 0.5) * 9,
+      w: 7 + Math.random() * 9,
+      h: 4 + Math.random() * 7,
+      color: CONF_COLORS[Math.floor(Math.random() * CONF_COLORS.length)],
+      alpha: 1,
+      shape: Math.random() > 0.5 ? 'rect' : 'circle',
+      r: 3 + Math.random() * 5
+    });
+  }
+  var fadeStart = Date.now() + 4500;
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var now = Date.now();
+    var alive = 0;
+    confParticles.forEach(function(p){
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vrot;
+      p.vy += 0.05;
+      if(now > fadeStart) p.alpha = Math.max(0, p.alpha - 0.012);
+      if(p.y < canvas.height + 30) alive++;
+      ctx.save();
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      if(p.shape === 'rect') {
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+      } else {
+        ctx.beginPath(); ctx.arc(0, 0, p.r, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    });
+    if(alive > 0 && confParticles[0].alpha > 0) {
+      confRaf = requestAnimationFrame(draw);
+    } else {
+      stopConfetti();
+    }
+  }
+  if(confRaf) cancelAnimationFrame(confRaf);
+  confRaf = requestAnimationFrame(draw);
+}
+
+function stopConfetti() {
+  if(confRaf) cancelAnimationFrame(confRaf);
+  confRaf = null;
+  var canvas = document.getElementById('confetti-canvas');
+  canvas.classList.remove('show');
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  confParticles = [];
+}
+
+/* ═══ SCREENS ═══ */
+function showScreen(n) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('screen-'+n).classList.add('active');
+}
+
+/* ═══ TTS ═══ */
+/* Maanden-afkortingen die TTS verkeerd uitspreekt als naam */
+var TTS_MONTH_FIX = /^(jan|feb|mrt|mar|apr|mei|jun|jul|aug|sep|okt|oct|nov|dec)\.?$/i;
+function fixTTSName(name) {
+  if(!name) return name;
+  // Als de naam een maandafkorting is, voeg een punt + spatie toe zodat TTS
+  // het als losse lettergreep uitspreekt i.p.v. als maandnaam
+  if(TTS_MONTH_FIX.test(name.trim())) return name + '.';
+  return name;
+}
+
+function speak(txt) {
+  if(!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(txt);
+  u.lang = L.code; u.rate = 1.0; u.pitch = 1.1;
+  var voices = window.speechSynthesis.getVoices();
+  var match = voices.find(function(v){ return v.lang === L.code; })
+    || voices.find(function(v){ return v.lang.startsWith(L.code.split('-')[0]); });
+  if(match) u.voice = match;
+  window.speechSynthesis.speak(u);
+}
+
+function speakWithNames(txt) {
+  // Vervang G.names in de tekst door TTS-veilige versie
+  var safe = txt;
+  if(G.names[0]) safe = safe.split(G.names[0]).join(fixTTSName(G.names[0]));
+  if(G.names[1]) safe = safe.split(G.names[1]).join(fixTTSName(G.names[1]));
+  speak(safe);
+}
+
+/* ═══ LANG ═══ */
+function setLang(k) { L = LANGS[k]; applyUI(); showScreen('home'); }
+
+function applyUI() {
+  var u = L.ui;
+  document.getElementById('sn-tt').textContent = u.tt;
+  document.getElementById('sn-bd').textContent = u.bd;
+  document.getElementById('sn-vb').textContent = u.vb;
+  document.getElementById('sn-sq').textContent = u.sq;
+  document.getElementById('sn-pd').textContent = u.pd;
+  document.getElementById('sn-pk').textContent = u.pk;
+  document.getElementById('sn-tn').textContent = u.tn;
+  document.getElementById('sn-pe').textContent = u.pe;
+  document.getElementById('sn-dt').textContent = u.dt;
+  document.getElementById('sn-cu').textContent = u.cu;
+  document.getElementById('lbl-cl').textContent = u.cl;
+  document.getElementById('lbl-tr').textContent = u.tr;
+  document.getElementById('lbl-tb').textContent = u.tb;
+  document.getElementById('btn-start').textContent = u.start;
+  document.getElementById('btn-back').textContent = u.back;
+  document.getElementById('btn-undo').textContent = u.undo;
+  document.getElementById('btn-new').textContent = u.newgame;
+  document.getElementById('btn-replay').textContent = u.replay;
+  document.getElementById('btn-hw').textContent = u.home;
+  document.getElementById('tap-lbl').textContent = u.tap;
+  document.getElementById('tap-lbl2').textContent = u.tap;
+  document.getElementById('lbl-ad').textContent = u.adlbl;
+  document.getElementById('ad-skip').textContent = u.skip;
+  if(!voiceOn) document.getElementById('bvt').textContent = u.voice;
+  document.getElementById('name-r').value = u.tr;
+  document.getElementById('name-b').value = u.tb;
+  document.getElementById('stap').textContent = u.splashtap;
+  document.getElementById('sn-tourn').textContent = u.tourn;
+  document.getElementById('btn-tourn').textContent = '🏆 ' + u.tournMode;
+  // History
+  document.getElementById('lbl-hist').textContent = '📋 ' + u.hist;
+  document.getElementById('lbl-hist-btn').textContent = u.hist;
+  document.getElementById('btn-hist-clear').textContent = u.histClear;
+  document.getElementById('btn-hist-back').textContent = u.back;
+  // Tournament setup
+  document.getElementById('lbl-ts-title').textContent = '🏆 ' + u.tourn;
+  document.getElementById('ts-sport-lbl').textContent = u.chooseSport;
+  document.getElementById('lbl-ts-mode').textContent = u.mode;
+  document.getElementById('lbl-ts-ko').textContent = u.ko;
+  document.getElementById('lbl-ts-ko-sub').textContent = u.koSub;
+  document.getElementById('lbl-ts-rr').textContent = u.rr;
+  document.getElementById('lbl-ts-rr-sub').textContent = u.rrSub;
+  document.getElementById('lbl-ts-players').textContent = u.playerCount;
+  document.getElementById('btn-start-tourn').textContent = '🏆 ' + u.startTourn;
+  document.getElementById('btn-tourn-back').textContent = u.back;
+  // Players
+  document.getElementById('lbl-players-btn').textContent = u.plTitle;
+  document.getElementById('lbl-players-title').textContent = '👤 ' + u.plTitle;
+  document.getElementById('btn-players-clear').textContent = u.plClear;
+  document.getElementById('btn-players-back').textContent = u.back;
+  document.getElementById('btn-pd-back').textContent = u.back;
+  document.getElementById('av-title').textContent = u.avTitle;
+  document.getElementById('btn-av-cancel').textContent = u.avCancel;
+  document.getElementById('btn-edit-avatar').textContent = '✏️ ' + u.editAvatar;
+}
+
+/* ═══ SPORT SELECT ═══ */
+function sel(k) {
+  pendingAvatars = ['',''];
+  document.getElementById('av-pick-r').classList.remove('show');
+  document.getElementById('av-pick-b').classList.remove('show');
+  G.key = k; G.sport = JSON.parse(JSON.stringify(SP[k]));
+  var nm = {tt:L.ui.tt,bd:L.ui.bd,vb:L.ui.vb,sq:L.ui.sq,pd:L.ui.pd,pk:L.ui.pk,tn:L.ui.tn,pe:L.ui.pe,dt:L.ui.dt,cu:L.ui.cu};
+  document.getElementById('setup-title').textContent = G.sport.icon+' '+nm[k];
+  var u=L.ui, s=G.sport, box=document.getElementById('sport-info');
+  if(k==='cu'){
+    renderPresets();
+  } else if(k==='dt'){
+    box.innerHTML='<div class="info-row"><label>Start score</label><select id="dt-start" style="background:#07070f;border:1px solid #222;border-radius:5px;color:#fff;padding:4px 6px;font-family:Rajdhani,sans-serif;font-weight:700;font-size:14px">'
+      +'<option value="501" selected>501</option><option value="301">301</option><option value="201">201</option></select></div>'
+      +'<div class="info-row"><label>Legs om te winnen</label><input type="number" id="dt-legs" min="1" max="7" value="3"/></div>';
+  } else if(k==='tn'){
+    box.innerHTML='<div class="info-row"><label>'+u.setsw+'</label><span class="info-val">2 '+u.sof+' 3</span></div>'
+      +'<div class="info-row"><label>'+u.pts+'</label><span class="info-val">15 · 30 · 40 · Game</span></div>';
+  } else {
+    box.innerHTML='<div class="info-row"><label>'+u.pts+'</label><span class="info-val">'+s.pointsToWin+'</span></div>'
+      +'<div class="info-row"><label>'+u.margin+'</label><span class="info-val">'+s.winBy+'</span></div>'
+      +'<div class="info-row"><label>'+u.setsw+'</label><span class="info-val">'+s.setsToWin+' '+u.sof+' '+s.totalSets+'</span></div>';
+  }
+  document.getElementById('name-r').value = L.ui.tr;
+  document.getElementById('name-b').value = L.ui.tb;
+  showScreen('setup');
+}
+
+/* ═══════════════════════════════════════════════════
+   GAME STATE
+═══════════════════════════════════════════════════ */
+function startGame() {
+  G.names[0] = document.getElementById('name-r').value.trim() || L.ui.tr;
+  G.names[1] = document.getElementById('name-b').value.trim() || L.ui.tb;
+  // Save pending avatars for new players
+  [0,1].forEach(function(i){
+    if(pendingAvatars[i]) {
+      var players = {};
+      try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+      if(!players[G.names[i]]) players[G.names[i]] = {w:0,l:0,sports:{},opponents:{},streak:0,bestStreak:0,recent:[]};
+      players[G.names[i]].avatar = pendingAvatars[i];
+      try { localStorage.setItem(PLAYERS_KEY, JSON.stringify(players)); } catch(e){}
+      pendingAvatars[i] = '';
+    }
+  });
+  // Hide pick buttons
+  document.getElementById('av-pick-r').classList.remove('show');
+  document.getElementById('av-pick-b').classList.remove('show');
+  if(G.key==='cu'){
+    var p=+document.getElementById('cp').value||10, m=+document.getElementById('cm').value||1, s=+document.getElementById('cs').value||1;
+    G.sport = { icon:'⚙️', pointsToWin:p, winBy:m, setsToWin:s, lastSetPoints:p, totalSets:s*2-1 };
+  } else if(G.key==='dt'){
+    var ds=+(document.getElementById('dt-start')||{value:501}).value||501;
+    var dl=+(document.getElementById('dt-legs')||{value:3}).value||3;
+    G.sport = JSON.parse(JSON.stringify(SP.dt));
+    G.sport.startScore=ds; G.sport.legsToWin=dl;
+  }
+  resetScores();
+  showBoardMode();
+  renderGame();
+  showScreen('game');
+  var sn={tt:L.ui.tt,bd:L.ui.bd,vb:L.ui.vb,sq:L.ui.sq,pd:L.ui.pd,pk:L.ui.pk,tn:L.ui.tn,pe:L.ui.pe,dt:L.ui.dt,cu:L.ui.cu};
+  speakWithNames((L.say.start||LANGS.nl.say.start)(sn[G.key], G.names[0], G.names[1]));
+}
+
+function showBoardMode() {
+  var isDarts = G.key==='dt';
+  var isTennis = G.key==='tn';
+  document.getElementById('regular-board').style.display = isDarts ? 'none' : 'flex';
+  document.getElementById('regular-board').style.flexDirection = 'column';
+  document.getElementById('regular-board').style.flex = isDarts ? '' : '1';
+  document.getElementById('darts-panel').classList.toggle('show', isDarts);
+  document.getElementById('tennis-bar').style.display = isTennis ? 'block' : 'none';
+}
+
+function resetScores() {
+  G.scores=[0,0]; G.sets=[0,0]; G.curSet=0; G.winner=null; G.hist=[];
+  // Darts state
+  D.rem=[G.sport.startScore||501, G.sport.startScore||501];
+  D.turn=0; D.legs=[0,0]; D.dartsThrown=[0,0]; D.totalScored=[0,0];
+  D.input=''; D.bust=false;
+  // Tennis state
+  TN.pts=[0,0]; TN.adv=-1;
+  document.getElementById('win-ov').classList.remove('show');
+  setStatus('','');
+  stopConfetti(); stopWinMusic();
+}
+
+/* ═══════════════════════════════════════════════════
+   REGULAR SPORT LOGIC (points/sets)
+═══════════════════════════════════════════════════ */
+function isSetWon(sc, op, si) {
+  var sp=G.sport, iL=si===sp.totalSets-1, t=iL?sp.lastSetPoints:sp.pointsToWin;
+  if(sp.maxPoints && sc>=sp.maxPoints) return true;
+  return sc>=t && (sc-op)>=sp.winBy;
+}
+function hasMPt(sc, op, si, sw) {
+  var sp=G.sport;
+  if(sw+1<sp.setsToWin) return false;
+  var iL=si===sp.totalSets-1, t=iL?sp.lastSetPoints:sp.pointsToWin, n=Math.max(t,op+sp.winBy);
+  return (sc+1)>=n && (sc+1-op)>=sp.winBy;
+}
+function hasSPt(sc, op, si, sw) {
+  var sp=G.sport;
+  if(sw+1>=sp.setsToWin) return false;
+  var iL=si===sp.totalSets-1, t=iL?sp.lastSetPoints:sp.pointsToWin, n=Math.max(t,op+sp.winBy);
+  return (sc+1)>=n && (sc+1-op)>=sp.winBy;
+}
+
+function addPoint(ti) {
+  if(G.winner!==null) return;
+  if(G.key==='tn') { tennisPoint(ti); return; }
+  var op=1-ti;
+  G.hist.push({scores:G.scores.slice(), sets:G.sets.slice(), cs:G.curSet});
+  G.scores[ti]++; flashPanel(ti);
+  if(isSetWon(G.scores[ti], G.scores[op], G.curSet)){
+    G.sets[ti]++;
+    if(G.sets[ti]>=G.sport.setsToWin){
+      G.winner=ti; renderGame(); showWinner(ti); speakWithNames(L.say.win(G.names[ti]));
+    } else {
+      var nr=G.curSet+1; G.curSet++; G.scores=[0,0];
+      setStatus(L.ui.set+' '+nr+' → '+G.names[ti],'');
+      speakWithNames(L.say.setwon(G.names[ti],nr,G.sets[0],G.sets[1])); renderGame();
+    }
+    return;
+  }
+  var mp0=hasMPt(G.scores[0],G.scores[1],G.curSet,G.sets[0]);
+  var mp1=hasMPt(G.scores[1],G.scores[0],G.curSet,G.sets[1]);
+  var sp0=hasSPt(G.scores[0],G.scores[1],G.curSet,G.sets[0]);
+  var sp1=hasSPt(G.scores[1],G.scores[0],G.curSet,G.sets[1]);
+  var base=L.say.score(G.names[ti],G.scores[0],G.scores[1]), suf='';
+  if(mp0||mp1){ var n=mp0?G.names[0]:G.names[1]; suf=L.say.mp(n); setStatus('🎯 '+L.ui.mp+' '+n+'!','mp'); }
+  else if(sp0||sp1){ var n2=sp0?G.names[0]:G.names[1]; suf=L.say.sp(n2); setStatus('⚡ '+L.ui.sp+' '+n2+'!','sp'); }
+  else if(G.scores[0]===G.scores[1] && G.scores[0]>=G.sport.pointsToWin-2){ suf=L.say.deuce; setStatus('🔁 '+L.ui.deuce+'!',''); }
+  else setStatus('','');
+  speak(base+suf); renderGame();
+}
+
+function undoPoint() {
+  if(G.key==='dt'){ dartUndo(); return; }
+  if(!G.hist.length) return;
+  var s=G.hist.pop();
+  G.scores=s.scores; G.sets=s.sets; G.curSet=s.cs; G.winner=null;
+  if(s.tnpts){ TN.pts=s.tnpts; TN.adv=s.tnadv; }
+  document.getElementById('win-ov').classList.remove('show');
+  setStatus('',''); renderGame();
+}
+
+function flashPanel(i) {
+  var p=document.getElementById(i===0?'panel-r':'panel-b'), s=document.getElementById(i===0?'sc-r':'sc-b');
+  p.classList.add('fl'); s.classList.add('pop');
+  setTimeout(function(){ p.classList.remove('fl'); s.classList.remove('pop'); }, 260);
+}
+function setStatus(msg,cls) {
+  var el=document.getElementById('stxt'); el.textContent=msg; el.className=cls;
+}
+
+function showWinner(i) {
+  document.getElementById('wn').textContent = G.names[i];
+  document.getElementById('wn').style.color = i===0?'#e63946':'#4361ee';
+  document.getElementById('ws').textContent = L.ui.wins;
+  document.getElementById('wsc').innerHTML = '<span style="color:#e63946">'+G.sets[0]+'</span><span style="color:#333;margin:0 9px">–</span><span style="color:#4361ee">'+G.sets[1]+'</span>';
+  document.getElementById('win-ov').classList.add('show');
+  saveToHistory(i);
+  startConfetti(); playWinMusic();
+  // Tournament handling
+  var tnBtn = document.getElementById('btn-tnext');
+  if(TOURN.active) {
+    tournamentWin(i);
+    tnBtn.style.display = '';
+    tnBtn.textContent = TOURN.champion !== null ? '🏆 ' + L.ui.viewBracket : '▶ ' + L.ui.nextMatch;
+    document.getElementById('btn-replay').style.display = 'none';
+    document.getElementById('btn-hw').style.display = 'none';
+  } else {
+    tnBtn.style.display = 'none';
+    document.getElementById('btn-replay').style.display = '';
+    document.getElementById('btn-hw').style.display = '';
+  }
+}
+function dismissWinner() { stopWinMusic(); stopConfetti(); }
+
+function renderGame() {
+  var sp=G.sport, u=L.ui;
+  var sn={tt:u.tt,bd:u.bd,vb:u.vb,sq:u.sq,pd:u.pd,pk:u.pk,tn:u.tn,pe:u.pe,dt:u.dt,cu:u.cu};
+  document.getElementById('gsn').textContent = sp.icon+' '+sn[G.key];
+  if(G.key==='dt'){ renderDarts(); return; }
+  document.getElementById('sets-r').textContent = G.sets[0];
+  document.getElementById('sets-b').textContent = G.sets[1];
+  document.getElementById('set-lbl').textContent = u.set+' '+(G.curSet+1);
+  document.getElementById('sc-r').textContent = G.scores[0];
+  document.getElementById('sc-b').textContent = G.scores[1];
+  document.getElementById('dn-r').textContent = G.names[0];
+  document.getElementById('dn-b').textContent = G.names[1];
+  // Subtle in-game avatars
+  var avR = getPlayerAvatar(G.names[0]);
+  var avB = getPlayerAvatar(G.names[1]);
+  document.getElementById('av-r').textContent = avR;
+  document.getElementById('av-b').textContent = avB;
+  if(G.key==='tn'){
+    var tl=['0','15','30','40','AD'];
+    var pr=TN.adv===0?'AD':(TN.adv===1?'40':tl[TN.pts[0]]);
+    var pb=TN.adv===1?'AD':(TN.adv===0?'40':tl[TN.pts[1]]);
+    document.getElementById('tn-pts-r').textContent=pr;
+    document.getElementById('tn-pts-b').textContent=pb;
+  }
+  ['r','b'].forEach(function(c,i){
+    var el=document.getElementById('dots-'+c); el.innerHTML='';
+    var tot=sp.totalSets||1;
+    for(var d=0;d<tot;d++){
+      var dot=document.createElement('div');
+      dot.className='set-dot'+(d<G.sets[i]?' d'+c:'');
+      el.appendChild(dot);
+    }
+  });
+}
+
+function newGame() { stopVoice(); showScreen('setup'); }
+function goHome()  { stopVoice(); stopWinMusic(); stopConfetti(); resetScores(); TOURN.active=false; showScreen('home'); }
+
+/* ═══════════════════════════════════════════════════
+   TENNIS LOGIC — 15/30/40/deuce/advantage
+═══════════════════════════════════════════════════ */
+var TN = { pts:[0,0], adv:-1 }; // pts: 0=0,1=15,2=30,3=40 | adv: -1=none,0=playerA,1=playerB
+
+function tennisPoint(ti) {
+  var op=1-ti;
+  G.hist.push({scores:G.scores.slice(),sets:G.sets.slice(),cs:G.curSet,tnpts:TN.pts.slice(),tnadv:TN.adv});
+  // Deuce/advantage situation
+  if(TN.pts[0]===3 && TN.pts[1]===3){
+    if(TN.adv===ti){ tnGameWon(ti); return; }
+    else if(TN.adv===op){ TN.adv=-1; speak(L.ui.deuce); setStatus('🔁 '+L.ui.deuce,''); }
+    else { TN.adv=ti; var advTxt=ti===0?G.names[0]:G.names[1]; speakWithNames('Voordeel '+advTxt); setStatus('⚡ Voordeel '+advTxt,'sp'); }
+    renderGame(); return;
+  }
+  TN.pts[ti]++;
+  if(TN.pts[ti]===4){ tnGameWon(ti); return; }
+  // Check deuce
+  if(TN.pts[0]===3&&TN.pts[1]===3){ TN.adv=-1; speak(L.ui.deuce); setStatus('🔁 '+L.ui.deuce,''); }
+  else {
+    var sc=['0','15','30','40'];
+    speak(sc[TN.pts[ti]]+' '+sc[TN.pts[op]]);
+    setStatus(sc[TN.pts[0]]+' – '+sc[TN.pts[1]],'');
+  }
+  renderGame();
+}
+
+function tnGameWon(ti) {
+  TN.pts=[0,0]; TN.adv=-1;
+  var op=1-ti;
+  G.scores[ti]++; flashPanel(ti);
+  // Check set: first to 6 games, win by 2 (or tiebreak at 6-6 → first to 7)
+  if(G.scores[ti]>=6 && (G.scores[ti]-G.scores[op])>=2 || (G.scores[ti]===7)){
+    G.sets[ti]++;
+    if(G.sets[ti]>=G.sport.setsToWin){
+      G.winner=ti; renderGame(); showWinner(ti); speakWithNames(L.say.win(G.names[ti]));
+    } else {
+      var nr=G.curSet+1; G.curSet++; G.scores=[0,0];
+      speakWithNames(L.say.setwon(G.names[ti],nr,G.sets[0],G.sets[1])); renderGame();
+    }
+    return;
+  }
+  var mp=G.sets[ti]===G.sport.setsToWin-1&&G.scores[ti]>=5&&(G.scores[ti]-G.scores[op])>=0;
+  speakWithNames(G.names[ti]+' game! '+G.scores[0]+'-'+G.scores[1]+(mp?'. Match point!':''));
+  if(mp) setStatus('🎯 Match point '+G.names[ti]+'!','mp');
+  else setStatus('','');
+  renderGame();
+}
+
+/* ═══════════════════════════════════════════════════
+   DARTS LOGIC — 501/301/201, double-out, legs
+═══════════════════════════════════════════════════ */
+var D = {
+  rem:[501,501], turn:0, legs:[0,0],
+  dartsThrown:[0,0], totalScored:[0,0],
+  input:'', bust:false
+};
+
+function dkPress(n) {
+  if(D.input.length>=3) return;
+  D.input += n;
+  if(D.input.length===1 && D.input==='0') D.input=''; // no leading zero
+  renderDartInput();
+}
+function dkDel() { D.input=D.input.slice(0,-1); renderDartInput(); }
+
+function dkConfirm() {
+  var val = parseInt(D.input||'0');
+  D.input=''; D.bust=false;
+  if(isNaN(val)||val<0||val>180) { renderDartInput(); return; }
+
+  var ti=D.turn, op=1-ti;
+  // Save undo state
+  D.hist = D.hist||[];
+  D.hist.push({rem:D.rem.slice(),legs:D.legs.slice(),turn:D.turn,thrown:D.dartsThrown.slice(),scored:D.totalScored.slice()});
+
+  D.dartsThrown[ti]+=3;
+  var newRem = D.rem[ti] - val;
+
+  // Bust: gone below 0, or landed on 1 (can't finish on 1), or exact 0 but need double
+  // Simplified: bust if newRem < 0 or newRem === 1
+  if(newRem < 0 || newRem === 1) {
+    D.bust=true;
+    speak(D.rem[ti]+' resterend');
+    setStatus('💥 BUST! '+G.names[ti]+' — '+D.rem[ti]+' over','');
+  } else if(newRem === 0) {
+    // LEG WON
+    D.totalScored[ti]+=val;
+    D.rem[ti]=G.sport.startScore;
+    D.legs[ti]++;
+
+    // 180 special call
+    if(val===180) speak180(ti);
+
+    if(D.legs[ti]>=G.sport.legsToWin){
+      G.winner=ti;
+      document.getElementById('dp-name-r').textContent=G.names[0];
+      document.getElementById('dp-name-b').textContent=G.names[1];
+      renderDarts();
+      showWinner(ti); speakWithNames(L.say.win(G.names[ti]));
+    } else {
+      D.rem=[G.sport.startScore,G.sport.startScore];
+      D.turn=0; // winner of leg throws first
+      speakWithNames(G.names[ti]+' wint de leg! '+D.legs[0]+'-'+D.legs[1]+' in legs. '+(G.sport.legsToWin-D.legs[ti])+' legs nog nodig.');
+      setStatus('🎯 '+G.names[ti]+' wint leg '+D.legs[ti]+'!','sp');
+    }
+  } else {
+    D.totalScored[ti]+=val;
+    D.rem[ti]=newRem;
+    if(val===180) speak180(ti);
+    else speak(String(newRem)+' resterend');
+    setStatus('','');
+    D.turn=op; // switch turns
+  }
+  renderDarts();
+}
+
+function speak180(ti) {
+  // Enthusiastic 180 call
+  var calls=['HONDERDTACHTIG!!! Maximale score!','EENHONDERDTACHTIG! Wat een worp!','180! Perfect! Ongelooflijk!','HONDERD... TACHTIG! De maximale score!'];
+  var call=calls[Math.floor(Math.random()*calls.length)];
+  speak(call);
+  setStatus('🔥 180!!! MAXIMUM! 🎯','mp');
+}
+
+function dartUndo() {
+  if(!D.hist||!D.hist.length) return;
+  var s=D.hist.pop();
+  D.rem=s.rem; D.legs=s.legs; D.turn=s.turn; D.dartsThrown=s.thrown; D.totalScored=s.scored;
+  D.input=''; D.bust=false; G.winner=null;
+  document.getElementById('win-ov').classList.remove('show');
+  setStatus('',''); renderDarts();
+}
+
+function renderDarts() {
+  var sp=G.sport;
+  // Player cards
+  ['r','b'].forEach(function(c,i){
+    var el=document.getElementById('dp-'+c);
+    var isActive=D.turn===i && G.winner===null;
+    el.className='dart-player dp-'+c+(isActive?' active-'+c:'');
+    document.getElementById('dp-name-'+c).textContent=G.names[i];
+    document.getElementById('dp-rem-'+c).textContent=D.rem[i];
+    document.getElementById('dp-legs-'+c).textContent=D.legs[i];
+    var avg=D.dartsThrown[i]>0?(D.totalScored[i]/(D.dartsThrown[i]/3)).toFixed(1):'—';
+    document.getElementById('dp-avg-'+c).textContent='gem: '+avg;
+  });
+  // Header legs
+  document.getElementById('sets-r').textContent=D.legs[0];
+  document.getElementById('sets-b').textContent=D.legs[1];
+  document.getElementById('set-lbl').textContent='LEG '+(D.legs[0]+D.legs[1]+1);
+  // Turn label
+  document.getElementById('dart-turn-lbl').textContent='🎯 '+G.names[D.turn]+' gooit';
+  renderDartInput();
+}
+
+function renderDartInput() {
+  var disp=document.getElementById('dart-disp');
+  disp.textContent=D.input||'0';
+  disp.className='dart-display'+(D.bust?' bust':'');
+}
+
+/* ═══ AD ═══ */
+var adT = null;
+function showAd() {
+  stopWinMusic(); stopConfetti();
+  document.getElementById('win-ov').classList.remove('show');
+  var ov=document.getElementById('ad-ov'), sk=document.getElementById('ad-skip'), cd=document.getElementById('ad-cd');
+  ov.classList.add('show'); sk.disabled=true;
+  var r=5; cd.textContent=r;
+  adT=setInterval(function(){ r--; cd.textContent=r<=0?'':r; if(r<=0){clearInterval(adT);sk.disabled=false;} },1000);
+}
+function skipAd() {
+  clearInterval(adT);
+  document.getElementById('ad-ov').classList.remove('show');
+  resetScores(); renderGame();
+}
+
+/* ═══════════════════════════════════════════════════
+   VOICE + MIC METER
+   
+   Strategy that actually works on Chrome:
+   ① getUserMedia → AudioContext AnalyserNode → REAL volume meter
+   ② SpeechRecognition runs independently (its own internal capture)
+   
+   These do NOT conflict. Chrome allows multiple mic consumers.
+   The AnalyserNode gives us true volume data every 60ms via RAF.
+   SR rings only show when real audio is detected (volume > threshold).
+═══════════════════════════════════════════════════ */
+var lastFired = 0;
+var COOL = 2000;
+var srInst = null;
+var meterAC = null, meterAnalyser = null, meterStream = null, meterRaf = null;
+var meterBuf = null;
+var isSpeakingMic = false;
+
+function startMeter(stream) {
+  try {
+    meterAC = new (window.AudioContext || window.webkitAudioContext)();
+    meterAnalyser = meterAC.createAnalyser();
+    meterAnalyser.fftSize = 256;
+    meterAnalyser.smoothingTimeConstant = 0.5;
+    var src = meterAC.createMediaStreamSource(stream);
+    src.connect(meterAnalyser);
+    meterBuf = new Uint8Array(meterAnalyser.frequencyBinCount);
+    var bars = [0,1,2,3,4].map(function(i){ return document.getElementById('lb'+i); });
+    function tick() {
+      if(!voiceOn) return;
+      meterRaf = requestAnimationFrame(tick);
+      meterAnalyser.getByteFrequencyData(meterBuf);
+      var sum = 0;
+      for(var i=0; i<meterBuf.length; i++) sum += meterBuf[i];
+      var avg = sum / meterBuf.length;
+      var speaking = avg > 8;
+      if(speaking !== isSpeakingMic) {
+        isSpeakingMic = speaking;
+        var mw = document.getElementById('mic-wrap');
+        if(!['m0','m1','miss'].includes(mw.className.replace('mic-wrap ','').trim())) {
+          mw.className = 'mic-wrap ' + (speaking ? 'active' : 'listen');
+        }
+      }
+      var step = Math.floor(meterBuf.length / 6);
+      for(var b=0; b<5; b++) {
+        var bandVal = meterBuf[(b+1)*step];
+        var h = Math.max(3, Math.round((bandVal / 255) * 20));
+        bars[b].style.height = h + 'px';
+        bars[b].style.background = bandVal > 30 ? '#2ecc71' : '#1a1a28';
+      }
+    }
+    meterRaf = requestAnimationFrame(tick);
+  } catch(e) {}
+}
+
+function stopMeter() {
+  isSpeakingMic = false;
+  if(meterRaf) cancelAnimationFrame(meterRaf);
+  meterRaf = null;
+  if(meterAnalyser) { try { meterAnalyser.disconnect(); } catch(e){} meterAnalyser = null; }
+  if(meterAC) { try { meterAC.close(); } catch(e){} meterAC = null; }
+  if(meterStream) { meterStream.getTracks().forEach(function(t){ t.stop(); }); meterStream = null; }
+  for(var i=0;i<5;i++){
+    document.getElementById('lb'+i).style.height = '3px';
+    document.getElementById('lb'+i).style.background = '#1a1a28';
+  }
+}
+
+function setMicState(state) {
+  document.getElementById('mic-wrap').className = 'mic-wrap ' + state;
+  if(state==='m0'||state==='m1'||state==='miss') {
+    setTimeout(function(){
+      if(voiceOn){ document.getElementById('mic-wrap').className='mic-wrap '+(isSpeakingMic?'active':'listen'); }
+    }, 900);
+  }
+}
+
+/* ═══ KEYWORD MATCHING (inclusief teamnamen + woordgrens-check) ═══ */
+function getKW() {
+  var n0 = G.names[0].toLowerCase().split(/\s+/).filter(function(w){ return w.length > 2; });
+  var n1 = G.names[1].toLowerCase().split(/\s+/).filter(function(w){ return w.length > 2; });
+  var n0u = n0.filter(function(w){ return n1.indexOf(w) === -1; });
+  var n1u = n1.filter(function(w){ return n0.indexOf(w) === -1; });
+  return {
+    k0: (L.k0 || []).concat(n0u),
+    k1: (L.k1 || []).concat(n1u)
+  };
+}
+
+function matchTxt(t) {
+  var kw = getKW();
+  var lo = t.toLowerCase();
+  for (var i = 0; i < kw.k0.length; i++) {
+    if (new RegExp('\\b' + kw.k0[i].replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b').test(lo)) return 0;
+  }
+  for (var j = 0; j < kw.k1.length; j++) {
+    if (new RegExp('\\b' + kw.k1[j].replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b').test(lo)) return 1;
+  }
+  return null;
+}
+
+/* === SPECIAL VOICE COMMANDS === */
+function matchSpecial(t) {
+  var lo = t.toLowerCase();
+  var sq = L.scoreQ || [];
+  for (var i = 0; i < sq.length; i++) {
+    if (lo.indexOf(sq[i]) !== -1) return { type: 'score' };
+  }
+  var uq = L.undo || [];
+  for (var i = 0; i < uq.length; i++) {
+    if (lo.indexOf(uq[i]) !== -1) return { type: 'undo' };
+  }
+  return null;
+}
+
+function voiceAnnounceScore() {
+  var setsStr = '';
+  if (G.sport.totalSets && G.sport.totalSets > 1) {
+    setsStr = G.sets[0] + '-' + G.sets[1];
+  }
+  speakWithNames(L.say.stand(G.names[0], G.scores[0], G.names[1], G.scores[1], setsStr));
+}
+
+function voiceUndo() {
+  if (!G.hist.length) return;
+  undoPoint();
+  speak(L.say.undod(G.scores[0], G.scores[1]));
+}
+
+function buildSR() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return null;
+  var r = new SR();
+  r.lang = L.code;
+  r.continuous = true;
+  r.interimResults = true;
+  r.maxAlternatives = 5;
+
+  r.onresult = function(e) {
+    for(var ri=e.resultIndex; ri<e.results.length; ri++) {
+      var result = e.results[ri];
+      var heard='', matched=null, special=null;
+      for(var ai=0; ai<result.length; ai++) {
+        var txt = result[ai].transcript;
+        if(!heard) heard=txt;
+        if(!special){ var sp=matchSpecial(txt); if(sp) special=sp; }
+        if(matched===null){ var m=matchTxt(txt); if(m!==null) matched=m; }
+      }
+      document.getElementById('vi-h').textContent = '"' + heard + '"';
+      var vm = document.getElementById('vi-m'), now = Date.now();
+      console.log("Heard:", heard, "Matched:", matched, "Special:", special);
+      /* -- Special: stand opvragen / ongedaan maken -- */
+      if(special && result.isFinal && now - lastFired > COOL) {
+        lastFired = now;
+        if(special.type==='score') {
+          setMicState('listen');
+          vm.textContent = '\ud83d\udcca stand opgeroepen';
+          vm.className = 'vi-m vm-wait';
+          voiceAnnounceScore();
+          return;
+        }
+        if(special.type==='undo') {
+          setMicState('listen');
+          vm.textContent = '\u21a9 ongedaan gemaakt';
+          vm.className = 'vi-m vm-wait';
+          voiceUndo();
+          return;
+        }
+      }
+      /* -- Normal score match -- */
+      if(matched !== null && now - lastFired > COOL) {
+        lastFired = now;
+        setMicState('m'+matched);
+        vm.textContent = '\u2705 punt \u2192 ' + G.names[matched];
+        vm.className = 'vi-m ' + (matched===0?'vm-ok0':'vm-ok1');
+        addPoint(matched);
+        return;
+      } else if(matched !== null) {
+        vm.textContent='\u23f1 te snel'; vm.className='vi-m vm-wait';
+      } else if(result.isFinal) {
+        if(heard) {
+          setMicState('miss');
+          vm.textContent='\u274c "'+heard+'" \u2014 zeg rood/blauw';
+          vm.className='vi-m vm-miss';
+        }
+      } else {
+        if(!['m0','m1','miss'].includes(
+          document.getElementById('mic-wrap').className.replace('mic-wrap ','').trim()
+        )) {
+          vm.textContent='\ud83d\udc42 luistert\u2026'; vm.className='vi-m vm-wait';
+        }
+      }
+    }
+  };
+
+  r.onerror = function(e) {
+    if(e.error==='not-allowed'||e.error==='permission-denied'){
+      voiceOn=false; setVBtn(false); stopMeter();
+      document.getElementById('voice-bar').classList.remove('show');
+      setMicState('idle'); setStatus(L.ui.micdenied,''); return;
+    }
+    if(e.error==='no-speech') return;
+    if(voiceOn) setTimeout(function(){ if(voiceOn&&srInst){try{srInst.start();}catch(x){}} },500);
+  };
+
+  r.onend = function() {
+    if(voiceOn) setTimeout(function(){ if(voiceOn&&srInst){try{srInst.start();}catch(x){}} },200);
+  };
+
+  return r;
+}
+
+async function toggleVoice() {
+  if(voiceOn) {
+    stopVoice();
+  } else {
+    var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){ setStatus(L.ui.nosr,''); return; }
+    voiceOn = true;
+    setVBtn(true);
+    document.getElementById('voice-bar').classList.add('show');
+    document.getElementById('vi-h').textContent='\u2014';
+    document.getElementById('vi-m').textContent=L.ui.waiting;
+    document.getElementById('vi-m').className='vi-m vm-wait';
+    setMicState('listen');
+    srInst = buildSR();
+    try{ srInst.start(); }catch(e){}
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+      meterStream = stream;
+      startMeter(stream);
+    } catch(e) { setMicState('listen'); }
+    setStatus('\ud83c\udfa4 '+L.ui.hint,'');
+    speak(L.say.vready);
+  }
+}
+
+function stopVoice() {
+  voiceOn=false; setVBtn(false);
+  document.getElementById('voice-bar').classList.remove('show');
+  setMicState('idle');
+  stopMeter();
+  if(srInst){try{srInst.stop();}catch(e){} srInst=null;}
+}
+function setVBtn(on) {
+  document.getElementById('bvt').textContent=on?L.ui.voiceOn:L.ui.voice;
+  document.getElementById('btn-voice').className='ctrl-btn c-voice'+(on?' on':'');
+}
+
+
+/* ═══════════════════════════════════════════════════
+   HISTORY — sla laatste 20 wedstrijden op
+═══════════════════════════════════════════════════ */
+var HISTORY_KEY = 'scorecount_history';
+var PLAYERS_KEY = 'scorecount_players';
+
+function saveToHistory(winnerIdx) {
+  var sportNames = {tt:'Tafeltennis',bd:'Badminton',vb:'Volleybal',sq:'Squash',pd:'Padel',pk:'Pickleball',tn:'Tennis',pe:'Pétanque',dt:'Darts',cu:'Eigen Spel'};
+  var now = new Date();
+  var pad = function(n){ return n<10?'0'+n:n; };
+  var entry = {
+    date: pad(now.getDate())+'-'+pad(now.getMonth()+1)+'-'+now.getFullYear(),
+    time: pad(now.getHours())+':'+pad(now.getMinutes()),
+    sport: G.sport.icon+' '+(sportNames[G.key]||G.key),
+    sportKey: G.key,
+    p0: G.names[0],
+    p1: G.names[1],
+    sc0: G.sets[0],
+    sc1: G.sets[1],
+    winner: winnerIdx
+  };
+  var hist = [];
+  try { hist = JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); } catch(e){}
+  hist.unshift(entry);
+  if(hist.length > 100) hist = hist.slice(0,100);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(hist)); } catch(e){}
+  // Update player stats
+  updatePlayerStats(entry);
+}
+
+function updatePlayerStats(entry) {
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  var winner = entry.winner===0 ? entry.p0 : entry.p1;
+  var loser  = entry.winner===0 ? entry.p1 : entry.p0;
+  [entry.p0, entry.p1].forEach(function(name) {
+    if(!name) return;
+    if(!players[name]) players[name] = {w:0,l:0,sports:{},opponents:{},streak:0,bestStreak:0,lastStreak:0,recent:[]};
+    var p = players[name];
+    var isWinner = name === winner;
+    if(isWinner){ p.w++; p.streak++; if(p.streak>p.bestStreak) p.bestStreak=p.streak; }
+    else { p.l++; p.streak=0; }
+    // Sports
+    var sk = entry.sportKey||'cu';
+    p.sports[sk] = (p.sports[sk]||0)+1;
+    // Opponents
+    var opp = name===entry.p0 ? entry.p1 : entry.p0;
+    if(opp){
+      if(!p.opponents[opp]) p.opponents[opp]={w:0,l:0};
+      if(isWinner) p.opponents[opp].w++; else p.opponents[opp].l++;
+    }
+    // Recent (keep last 5)
+    p.recent.unshift({
+      opp: opp,
+      score: entry.sc0+'-'+entry.sc1,
+      win: isWinner,
+      sport: entry.sport,
+      date: entry.date
+    });
+    if(p.recent.length>5) p.recent=p.recent.slice(0,5);
+  });
+  try { localStorage.setItem(PLAYERS_KEY, JSON.stringify(players)); } catch(e){}
+}
+
+function getPlayerColor(name) {
+  var colors = ['#e63946','#4361ee','#f4d03f','#2ecc71','#e67e22','#9b59b6','#1abc9c','#e74c3c'];
+  var hash = 0;
+  for(var i=0;i<name.length;i++) hash = name.charCodeAt(i) + ((hash<<5)-hash);
+  return colors[Math.abs(hash) % colors.length];
+}
+
+function showPlayersScreen() {
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  var list = document.getElementById('pl-list');
+  var names = Object.keys(players).sort(function(a,b){
+    return (players[b].w+players[b].l) - (players[a].w+players[a].l);
+  });
+  if(!names.length){
+    list.innerHTML = '<div class="hist-empty">'+L.ui.plEmpty+'</div>';
+  } else {
+    list.innerHTML = names.map(function(name){
+      var p = players[name];
+      var total = p.w+p.l;
+      var ratio = total>0 ? Math.round((p.w/total)*100) : 0;
+      var color = getPlayerColor(name);
+      var initial = p.avatar ? p.avatar : name.charAt(0).toUpperCase();
+      var avStyle = p.avatar ? 'font-size:20px;' : '';
+      return '<div class="pl-card" onclick="showPlayerDetail(\''+name.replace(/'/g,"\\'")+'\')">'
+        +'<div class="pl-card-top">'
+        +'<div class="pl-avatar" style="background:'+color+'22;color:'+color+';'+avStyle+'">'+initial+'</div>'
+        +'<div style="flex:1">'
+        +'<div class="pl-name">'+name+'</div>'
+        +'<div class="pl-wl">'+p.w+' W · '+p.l+' L · '+ratio+'%</div>'
+        +'</div>'
+        +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:'+color+';letter-spacing:1px">'+p.w+p.l+'</div>'
+        +'</div>'
+        +'<div class="pl-bar-row">'
+        +'<div class="pl-bar-w" style="width:'+ratio+'%;background:'+color+'"></div>'
+        +'<div class="pl-bar-l"></div>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+  showScreen('players');
+}
+
+function showPlayerDetail(name) {
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  var p = players[name];
+  if(!p) return;
+  currentAvatarPlayer = name;
+  var color = getPlayerColor(name);
+  var u = L.ui;
+
+  // Header — show custom avatar emoji or initial letter
+  var pdAv = document.getElementById('pd-avatar');
+  if(p.avatar) {
+    pdAv.textContent = p.avatar;
+    pdAv.style.fontSize = '26px';
+    pdAv.style.background = color+'22';
+    pdAv.style.color = 'transparent';
+  } else {
+    pdAv.textContent = name.charAt(0).toUpperCase();
+    pdAv.style.fontSize = '';
+    pdAv.style.background = color+'22';
+    pdAv.style.color = color;
+  }
+  document.getElementById('pd-name').textContent = name;
+  var total = p.w+p.l;
+  var ratio = total>0 ? Math.round((p.w/total)*100) : 0;
+  document.getElementById('pd-subtitle').textContent = total+' '+u.plMatches+' · '+ratio+'% '+u.plWin;
+
+  // Most played sport
+  var sportKeys = Object.keys(p.sports);
+  var topSport = sportKeys.length ? sportKeys.reduce(function(a,b){ return p.sports[a]>p.sports[b]?a:b; }) : null;
+  var sportNames={tt:'🏓 Tafeltennis',bd:'🏸 Badminton',vb:'🏐 Volleybal',sq:'🎾 Squash',pd:'🏓 Padel',pk:'🥒 Pickleball',tn:'🎾 Tennis',pe:'🪨 Pétanque',dt:'🎯 Darts',cu:'⚙️ Eigen'};
+
+  // Toughest opponent (most losses against)
+  var oppKeys = Object.keys(p.opponents);
+  var toughOpp = null, toughLosses = 0;
+  oppKeys.forEach(function(opp){
+    if(p.opponents[opp].l > toughLosses){ toughLosses=p.opponents[opp].l; toughOpp=opp; }
+  });
+
+  var html = '';
+
+  // Main stats grid
+  html += '<div class="pd-section">';
+  html += '<div class="pd-stats-grid">';
+  html += '<div class="pd-stat"><span class="pd-stat-val" style="color:#2ecc71">'+p.w+'</span><span class="pd-stat-lbl">'+u.plWins+'</span></div>';
+  html += '<div class="pd-stat"><span class="pd-stat-val" style="color:#e63946">'+p.l+'</span><span class="pd-stat-lbl">'+u.plLosses+'</span></div>';
+  html += '<div class="pd-stat"><span class="pd-stat-val" style="color:'+color+'">'+ratio+'%</span><span class="pd-stat-lbl">Ratio</span></div>';
+  html += '<div class="pd-stat"><span class="pd-stat-val" style="color:#f4d03f">'+p.bestStreak+'</span><span class="pd-stat-lbl">'+u.plStreak+'</span></div>';
+  html += '</div></div>';
+
+  // Most played sport
+  if(topSport){
+    html += '<div class="pd-section"><div class="pd-section-title">'+u.plSport+'</div>';
+    html += '<div class="pd-wide"><span class="pd-wide-val">'+(sportNames[topSport]||topSport)+'</span>';
+    html += '<div class="pd-wide-lbl">'+p.sports[topSport]+' '+u.plMatches+'</div></div></div>';
+  }
+
+  // Toughest opponent
+  if(toughOpp){
+    var tWins = p.opponents[toughOpp].w;
+    html += '<div class="pd-section"><div class="pd-section-title">'+u.plTough+'</div>';
+    html += '<div class="pd-wide"><span class="pd-wide-val">'+toughOpp+'</span>';
+    html += '<div class="pd-wide-lbl">'+toughLosses+' '+u.plLoss+' · '+tWins+' '+u.plWin+'</div></div></div>';
+  }
+
+  // All opponents
+  if(oppKeys.length > 1){
+    html += '<div class="pd-section"><div class="pd-section-title">'+u.plVs+'</div><div class="pd-wide">';
+    oppKeys.sort(function(a,b){ return (p.opponents[b].w+p.opponents[b].l)-(p.opponents[a].w+p.opponents[a].l); }).forEach(function(opp){
+      var ow=p.opponents[opp].w, ol=p.opponents[opp].l;
+      html += '<div class="pd-sport-row"><span class="pd-sport-name">'+opp+'</span><span class="pd-sport-count">'+ow+'W '+ol+'L</span></div>';
+    });
+    html += '</div></div>';
+  }
+
+  // Recent matches
+  if(p.recent && p.recent.length){
+    html += '<div class="pd-section"><div class="pd-section-title">'+u.plRecent+'</div><div class="pd-recent">';
+    p.recent.forEach(function(r){
+      var rc = r.win ? '#2ecc71' : '#e63946';
+      var rl = r.win ? u.plWin : u.plLoss;
+      html += '<div class="pd-recent-item">'
+        +'<div><div class="pd-recent-opp">'+u.plVs+' '+(r.opp||'?')+'</div>'
+        +'<div style="font-size:9px;color:#333;letter-spacing:1px;margin-top:1px">'+r.sport+'</div></div>'
+        +'<div style="text-align:right"><div class="pd-recent-sc" style="color:'+rc+'">'+r.score+'</div>'
+        +'<div class="pd-recent-result" style="color:'+rc+'">'+rl+'</div></div>'
+        +'</div>';
+    });
+    html += '</div></div>';
+  }
+
+  document.getElementById('pd-body').innerHTML = html;
+  showScreen('player-detail');
+}
+
+function clearPlayers() {
+  if(!confirm(L.ui.plClear+'?')) return;
+  try { localStorage.removeItem(PLAYERS_KEY); } catch(e){}
+  showPlayersScreen();
+}
+
+/* ═══ PLAYER AVATAR HELPER ═══ */
+function getPlayerAvatar(name) {
+  if(!name) return '';
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  return (players[name] && players[name].avatar) ? players[name].avatar : '';
+}
+
+/* ═══ NAME SUGGESTIONS ═══ */
+var sugTimers = [null, null];
+
+function onNameInput(idx) {
+  clearTimeout(sugTimers[idx]);
+  sugTimers[idx] = setTimeout(function(){ buildSuggestions(idx); }, 80);
+}
+
+function buildSuggestions(idx) {
+  var inputId = idx===0 ? 'name-r' : 'name-b';
+  var sugId   = idx===0 ? 'sug-r'  : 'sug-b';
+  var pickId  = idx===0 ? 'av-pick-r' : 'av-pick-b';
+  var iconId  = idx===0 ? 'av-pick-icon-r' : 'av-pick-icon-b';
+  var lblId   = idx===0 ? 'av-pick-lbl-r' : 'av-pick-lbl-b';
+  var input   = document.getElementById(inputId);
+  var sug     = document.getElementById(sugId);
+  var pick    = document.getElementById(pickId);
+  var val     = input.value.trim();
+  var valLow  = val.toLowerCase();
+
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  var names = Object.keys(players);
+
+  // Determine if this is a "new" name (not empty, not default, not existing)
+  var defaultNames = [L.ui.tr, L.ui.tb, 'Team Rood', 'Team Blauw', 'Team Red', 'Team Blue'];
+  var isEmpty = val==='' || defaultNames.indexOf(val) !== -1;
+  var isKnown = names.indexOf(val) !== -1;
+  var isNew = !isEmpty && !isKnown;
+
+  // Show/update avatar pick button for new names
+  if(isNew) {
+    var existingAv = pendingAvatars[idx] || '';
+    document.getElementById(iconId).textContent = existingAv || '😊';
+    document.getElementById(lblId).textContent = existingAv ? (L.ui.editAvatar||'Embleem wijzigen') : (L.ui.avTitle ? L.ui.avTitle.replace('Kies ','Kies ') : 'Kies embleem');
+    pick.classList.add('show');
+  } else {
+    pick.classList.remove('show');
+    pendingAvatars[idx] = '';
+  }
+
+  // Suggestions
+  if(!names.length){ sug.classList.remove('open'); return; }
+  var filtered = names.filter(function(n){
+    return isEmpty || valLow==='' || n.toLowerCase().indexOf(valLow) !== -1;
+  }).slice(0, 5);
+
+  if(!filtered.length){ sug.classList.remove('open'); return; }
+
+  sug.innerHTML = filtered.map(function(name){
+    var p = players[name];
+    var total = p.w + p.l;
+    var av = p.avatar || '';
+    var color = getPlayerColor(name);
+    var avatarHtml = av
+      ? '<div class="name-sug-av" style="background:'+color+'22;font-size:16px">'+av+'</div>'
+      : '<div class="name-sug-av" style="background:'+color+'22;color:'+color+';font-family:\'Bebas Neue\',sans-serif;font-size:13px">'+name.charAt(0).toUpperCase()+'</div>';
+    return '<div class="name-sug-item" onmousedown="pickSuggestion('+idx+',\''+name.replace(/'/g,"\\'")+'\')">'
+      + avatarHtml
+      + '<div><div class="name-sug-name">'+name+'</div>'
+      + '<div class="name-sug-wl">'+p.w+'W · '+p.l+'L · '+total+' '+L.ui.plMatches+'</div></div>'
+      + '</div>';
+  }).join('');
+  sug.classList.add('open');
+}
+
+// Pending avatars for new names not yet in players db
+var pendingAvatars = ['', ''];
+// Which input slot is the avatar picker targeting (0=red,1=blue, 2=detail page)
+var avatarPickerTarget = null; // 'input0' | 'input1' | 'player'
+
+function openAvatarPickerForInput(idx) {
+  avatarPickerTarget = 'input'+idx;
+  currentAvatarPlayer = null;
+  var iconId = idx===0 ? 'av-pick-icon-r' : 'av-pick-icon-b';
+  var current = pendingAvatars[idx] || '';
+  var grid = document.getElementById('av-grid');
+  grid.innerHTML = AVATARS.map(function(av){
+    return '<div class="av-item'+(av===current?' sel':'')+'" onclick="selectAvatar(\''+av+'\')" data-av="'+av+'">'+av+'</div>';
+  }).join('');
+  document.getElementById('av-overlay').classList.add('show');
+}
+
+function pickSuggestion(idx, name) {
+  var inputId = idx===0 ? 'name-r' : 'name-b';
+  var sugId   = idx===0 ? 'sug-r'  : 'sug-b';
+  document.getElementById(inputId).value = name;
+  document.getElementById(sugId).classList.remove('open');
+}
+
+function hideNameSug(idx) {
+  // Slight delay so onmousedown on item fires first
+  setTimeout(function(){
+    var sugId = idx===0 ? 'sug-r' : 'sug-b';
+    document.getElementById(sugId).classList.remove('open');
+  }, 180);
+}
+var AVATARS = [
+  // Sport
+  '🏓','🏸','🎾','🏐','🎯','🥊','⚽','🏀','🏈','⚾','🏒','🏑',
+  '🎱','🏋️','🤸','🧘','🚴','🏊','🤾','🥋',
+  // Animals
+  '🦁','🐯','🦊','🐺','🦅','🦆','🐻','🐼','🦈','🦁',
+  '🐸','🦋','🦄','🐉','🦖','🦎','🦝','🐗','🦏','🐆',
+  // Fun / personality
+  '👑','💎','⚡','🔥','❄️','🌊','🌪️','💥','🎭','🎪',
+  '🚀','💫','🌟','☄️','🎸','🥁','🎺','🎻','🎤','🎮',
+  // Food / misc fun
+  '🍕','🌶️','🍺','☕','🧊','🍭','🦾','💪','🧠','👾',
+];
+
+var currentAvatarPlayer = null;
+
+function openAvatarPicker() {
+  avatarPickerTarget = 'player';
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  var current = currentAvatarPlayer && players[currentAvatarPlayer] ? players[currentAvatarPlayer].avatar || null : null;
+  var grid = document.getElementById('av-grid');
+  grid.innerHTML = AVATARS.map(function(av){
+    return '<div class="av-item'+(av===current?' sel':'')+'" onclick="selectAvatar(\''+av+'\')" data-av="'+av+'">'+av+'</div>';
+  }).join('');
+  document.getElementById('av-overlay').classList.add('show');
+}
+
+function selectAvatar(av) {
+  // Update grid selection
+  document.querySelectorAll('.av-item').forEach(function(el){
+    el.classList.toggle('sel', el.dataset.av === av);
+  });
+
+  if(avatarPickerTarget === 'player' && currentAvatarPlayer) {
+    // Save to existing player
+    var players = {};
+    try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+    if(players[currentAvatarPlayer]) {
+      players[currentAvatarPlayer].avatar = av;
+      try { localStorage.setItem(PLAYERS_KEY, JSON.stringify(players)); } catch(e){}
+    }
+    var pdAv = document.getElementById('pd-avatar');
+    pdAv.textContent = av;
+    pdAv.style.fontSize = '26px';
+
+  } else if(avatarPickerTarget === 'input0' || avatarPickerTarget === 'input1') {
+    var idx = avatarPickerTarget === 'input0' ? 0 : 1;
+    pendingAvatars[idx] = av;
+    var iconId = idx===0 ? 'av-pick-icon-r' : 'av-pick-icon-b';
+    var lblId  = idx===0 ? 'av-pick-lbl-r'  : 'av-pick-lbl-b';
+    document.getElementById(iconId).textContent = av;
+    document.getElementById(lblId).textContent = L.ui.editAvatar || 'Embleem wijzigen';
+  }
+
+  setTimeout(function(){ closeAvatarPicker(); }, 250);
+}
+
+function closeAvatarPicker() {
+  document.getElementById('av-overlay').classList.remove('show');
+}
+
+function deleteCurrentPlayer() {
+  if(!currentAvatarPlayer) return;
+  if(!confirm(L.ui.deletePl + '\n"' + currentAvatarPlayer + '"')) return;
+  var players = {};
+  try { players = JSON.parse(localStorage.getItem(PLAYERS_KEY)||'{}'); } catch(e){}
+  delete players[currentAvatarPlayer];
+  try { localStorage.setItem(PLAYERS_KEY, JSON.stringify(players)); } catch(e){}
+  currentAvatarPlayer = null;
+  showPlayersScreen();
+}
+
+function showHistoryScreen() {
+  var list = document.getElementById('hist-list');
+  var hist = [];
+  try { hist = JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]'); } catch(e){}
+  if(!hist.length) {
+    list.innerHTML = '<div class="hist-empty">'+L.ui.histEmpty+'</div>';
+  } else {
+    list.innerHTML = hist.map(function(e){
+      var wColor = e.winner===0?'#e63946':'#4361ee';
+      return '<div class="hist-card">'
+        +'<div class="hist-top"><span class="hist-sport">'+e.sport+'</span><span class="hist-dt">'+e.date+' · '+e.time+'</span></div>'
+        +'<div class="hist-players"><span class="hist-p0">'+e.p0+'</span><span class="hist-vs">vs</span><span class="hist-p1">'+e.p1+'</span></div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between">'
+        +'<div class="hist-score"><span class="hist-sc0">'+e.sc0+'</span><span class="hist-dash">–</span><span class="hist-sc1">'+e.sc1+'</span></div>'
+        +'<div class="hist-winner" style="color:'+wColor+'">🏆 '+(e.winner===0?e.p0:e.p1)+'</div>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  }
+  showScreen('history');
+}
+
+function clearHistory() {
+  if(!confirm('Geschiedenis wissen?')) return;
+  try { localStorage.removeItem(HISTORY_KEY); } catch(e){}
+  showHistoryScreen();
+}
+
+/* ═══ CUSTOM PRESETS ═══ */
+var PRESET_EMOJIS = ['⚽','🏀','🏈','🎯','🎲','🃏','🏐','🏒','⛳','🥊','🎳','🏆','🎮','🪁','🛹','🤾'];
+var userPresets = [];
+try { userPresets = JSON.parse(localStorage.getItem('sc_presets')||'[]'); } catch(e){ userPresets=[]; }
+
+function savePresetsLS() {
+  try { localStorage.setItem('sc_presets', JSON.stringify(userPresets)); } catch(e){}
+}
+
+function applyPreset(pts, margin, sets) {
+  document.getElementById('cp').value = pts;
+  document.getElementById('cm').value = margin;
+  document.getElementById('cs').value = sets;
+}
+
+function renderPresets() {
+  var box = document.getElementById('sport-info');
+  if(!box || G.key !== 'cu') return;
+  var u = L.ui;
+  var html = '';
+
+  if(userPresets.length > 0) {
+    html += '<div class="preset-divider">'+L.ui.myPresets+'</div>';
+    html += '<div class="preset-grid">';
+    for(var i=0; i<userPresets.length; i++) {
+      var p = userPresets[i];
+      html += '<div class="preset-btn" onclick="applyPreset('+p.pts+','+p.margin+','+p.sets+')">'
+        + '<button class="preset-del" onclick="event.stopPropagation();deletePreset('+i+')" title="Verwijderen">✕</button>'
+        + '<span class="preset-icon">'+p.icon+'</span>'
+        + '<span class="preset-name">'+p.name+'</span>'
+        + '<span class="preset-sub">'+p.pts+' pts · marge '+p.margin+' · '+(p.sets>1?'best of '+(p.sets*2-1):p.sets+' set')+'</span>'
+        + '</div>';
+    }
+    html += '<div class="preset-add" onclick="openPresetModal()"><span class="preset-add-icon">＋</span><span class="preset-add-name">'+L.ui.newPreset+'</span></div>';
+    html += '</div>';
+  } else {
+    html += '<div class="preset-divider">'+L.ui.myPresets+'</div>';
+    html += '<div class="preset-grid">';
+    html += '<div class="preset-add" onclick="openPresetModal()" style="grid-column:1/-1"><span class="preset-add-icon">＋</span><span class="preset-add-name">'+L.ui.firstPreset+'</span></div>';
+    html += '</div>';
+  }
+
+  html += '<div class="preset-divider">'+L.ui.customSettings+'</div>'
+    + '<div class="info-row"><label>'+u.pts+'</label><input type="number" id="cp" min="1" max="100" value="10"/></div>'
+    + '<div class="info-row"><label>'+u.margin+'</label><input type="number" id="cm" min="1" max="5" value="1"/></div>'
+    + '<div class="info-row"><label>'+u.setsw+'</label><input type="number" id="cs" min="1" max="5" value="1"/></div>';
+
+  box.innerHTML = html;
+}
+
+var pmSelectedEmoji = '⚽';
+
+function openPresetModal() {
+  pmSelectedEmoji = PRESET_EMOJIS[0];
+  document.getElementById('pm-name').value = '';
+  document.getElementById('pm-pts').value = 10;
+  document.getElementById('pm-margin').value = 1;
+  document.getElementById('pm-sets').value = 1;
+  var eg = document.getElementById('pm-emojis');
+  eg.innerHTML = '';
+  for(var i=0; i<PRESET_EMOJIS.length; i++) {
+    var d = document.createElement('div');
+    d.className = 'pm-emoji' + (i===0?' sel':'');
+    d.textContent = PRESET_EMOJIS[i];
+    d.setAttribute('data-e', PRESET_EMOJIS[i]);
+    d.onclick = function(){ 
+      pmSelectedEmoji = this.getAttribute('data-e');
+      var all = eg.querySelectorAll('.pm-emoji');
+      for(var j=0;j<all.length;j++) all[j].classList.remove('sel');
+      this.classList.add('sel');
+    };
+    eg.appendChild(d);
+  }
+  document.getElementById('preset-modal-ov').classList.add('show');
+}
+
+function closePresetModal() {
+  document.getElementById('preset-modal-ov').classList.remove('show');
+}
+
+function savePreset() {
+  var name = document.getElementById('pm-name').value.trim();
+  if(!name) { document.getElementById('pm-name').style.borderColor='#e63946'; return; }
+  document.getElementById('pm-name').style.borderColor='#222';
+  var p = {
+    name: name,
+    icon: pmSelectedEmoji,
+    pts: +(document.getElementById('pm-pts').value)||10,
+    margin: +(document.getElementById('pm-margin').value)||1,
+    sets: +(document.getElementById('pm-sets').value)||1
+  };
+  userPresets.push(p);
+  savePresetsLS();
+  closePresetModal();
+  renderPresets();
+  // Also apply it immediately
+  applyPreset(p.pts, p.margin, p.sets);
+}
+
+function deletePreset(idx) {
+  userPresets.splice(idx, 1);
+  savePresetsLS();
+  renderPresets();
+}
+
+
+/* ======================================================
+   TOURNAMENT MODE
+====================================================== */
+var TOURN = { active:false, sportKey:null, mode:'ko', players:[], matches:[], rounds:[], currentMatch:-1, champion:null, playerCount:4 };
+
+function openTournament(preselectedSport) {
+  TOURN.sportKey = preselectedSport || null;
+  TOURN.mode = 'ko';
+  TOURN.playerCount = 4;
+  TOURN.champion = null;
+  renderTournSetup();
+  showScreen('tourn-setup');
+}
+
+function renderTournSetup() {
+  var grid = document.getElementById('ts-sport-grid');
+  var sports = [{k:'tt',icon:'🏓'},{k:'bd',icon:'🏸'},{k:'vb',icon:'🏐'},{k:'sq',icon:'🎱'},{k:'pd',icon:'🏸'},{k:'pk',icon:'🥒'},{k:'tn',icon:'🎾'},{k:'pe',icon:'🪨'},{k:'dt',icon:'🎯'},{k:'cu',icon:'⚙️'}];
+  var nm={tt:L.ui.tt,bd:L.ui.bd,vb:L.ui.vb,sq:L.ui.sq,pd:L.ui.pd,pk:L.ui.pk,tn:L.ui.tn,pe:L.ui.pe,dt:L.ui.dt,cu:L.ui.cu};
+  grid.innerHTML = sports.map(function(s){
+    var sel = TOURN.sportKey===s.k ? ' sel' : '';
+    return '<div class="ts-sport-btn'+sel+'" onclick="selectTournSport(\''+s.k+'\')"><span class="sc-icon">'+s.icon+'</span><span class="sc-name">'+nm[s.k]+'</span></div>';
+  }).join('');
+  document.getElementById('ts-mode-ko').classList.toggle('sel', TOURN.mode==='ko');
+  document.getElementById('ts-mode-rr').classList.toggle('sel', TOURN.mode==='rr');
+  document.getElementById('ts-count').textContent = TOURN.playerCount;
+  var ng = document.getElementById('ts-names');
+  var h = '';
+  for(var i=0; i<TOURN.playerCount; i++) h += '<input class="ts-name-input" id="ts-n-'+i+'" placeholder="'+L.ui.player+' '+(i+1)+'" maxlength="12"/>';
+  ng.innerHTML = h;
+}
+
+function selectTournSport(k) { TOURN.sportKey = k; renderTournSetup(); }
+function setTournMode(m) { TOURN.mode = m; document.getElementById('ts-mode-ko').classList.toggle('sel',m==='ko'); document.getElementById('ts-mode-rr').classList.toggle('sel',m==='rr'); }
+
+function changeTournPlayers(d) {
+  var names = [];
+  for(var i=0; i<TOURN.playerCount; i++){ var el=document.getElementById('ts-n-'+i); names.push(el?el.value:''); }
+  TOURN.playerCount = Math.max(3, Math.min(16, TOURN.playerCount+d));
+  renderTournSetup();
+  for(var j=0; j<Math.min(names.length,TOURN.playerCount); j++){ var el2=document.getElementById('ts-n-'+j); if(el2) el2.value=names[j]; }
+}
+
+function startTournament() {
+  if(!TOURN.sportKey) { alert(L.ui.noSport); return; }
+  var players = [];
+  for(var i=0; i<TOURN.playerCount; i++){ var el=document.getElementById('ts-n-'+i); players.push((el?el.value.trim():'') || (L.ui.player+' '+(i+1))); }
+  TOURN.players = players;
+  TOURN.active = true;
+  TOURN.champion = null;
+  TOURN.matches = [];
+  TOURN.rounds = [];
+  if(TOURN.mode==='ko') buildKnockoutBracket(); else buildRoundRobin();
+  renderBracket();
+  showScreen('bracket');
+}
+
+function buildKnockoutBracket() {
+  var n=TOURN.players.length, size=1;
+  while(size<n) size*=2;
+  var seeded=[];
+  for(var i=0;i<size;i++) seeded.push(i<n?i:-1);
+  var round=[];
+  for(var i=0;i<size;i+=2){
+    var m={p1:seeded[i],p2:seeded[i+1],winner:null,score:'',id:TOURN.matches.length};
+    if(m.p1===-1&&m.p2===-1){m.winner=-1;m.score='BYE';}
+    else if(m.p1===-1){m.winner=m.p2;m.score='BYE';}
+    else if(m.p2===-1){m.winner=m.p1;m.score='BYE';}
+    TOURN.matches.push(m); round.push(m.id);
+  }
+  TOURN.rounds.push(round);
+  var prev=round;
+  while(prev.length>1){
+    var next=[];
+    for(var i=0;i<prev.length;i+=2){
+      var m={p1:null,p2:null,winner:null,score:'',id:TOURN.matches.length,from:[prev[i],prev[i+1]]};
+      var f1=TOURN.matches[prev[i]],f2=TOURN.matches[prev[i+1]];
+      if(f1.winner!==null)m.p1=f1.winner;
+      if(f2.winner!==null)m.p2=f2.winner;
+      if(m.winner===null&&m.p1!==null&&m.p2!==null){
+        if(m.p1===-1&&m.p2===-1){m.winner=-1;m.score='BYE';}
+        else if(m.p1===-1){m.winner=m.p2;m.score='BYE';}
+        else if(m.p2===-1){m.winner=m.p1;m.score='BYE';}
+      }
+      TOURN.matches.push(m); next.push(m.id);
+    }
+    TOURN.rounds.push(next); prev=next;
+  }
+  findCurrentMatch();
+}
+
+function buildRoundRobin() {
+  var n=TOURN.players.length, round=[];
+  for(var i=0;i<n;i++) for(var j=i+1;j<n;j++){
+    var m={p1:i,p2:j,winner:null,score:'',id:TOURN.matches.length};
+    TOURN.matches.push(m); round.push(m.id);
+  }
+  TOURN.rounds.push(round);
+  findCurrentMatch();
+}
+
+function findCurrentMatch() {
+  TOURN.currentMatch=-1;
+  for(var i=0;i<TOURN.matches.length;i++){
+    var m=TOURN.matches[i];
+    if(m.winner===null&&m.p1!==null&&m.p2!==null&&m.p1!==-1&&m.p2!==-1){ TOURN.currentMatch=i; return; }
+  }
+  var fin=TOURN.matches[TOURN.matches.length-1];
+  if(fin&&fin.winner!==null&&fin.winner!==-1) TOURN.champion=fin.winner;
+  // Round robin check
+  if(TOURN.mode==='rr'){ var allDone=TOURN.matches.every(function(m){return m.winner!==null;}); if(allDone) rrFindChampion(); }
+}
+
+function rrFindChampion() {
+  var stats={};
+  for(var i=0;i<TOURN.players.length;i++) stats[i]={w:0,pts:0};
+  for(var i=0;i<TOURN.matches.length;i++){ var m=TOURN.matches[i]; if(m.winner!==null){stats[m.winner].w++;stats[m.winner].pts+=3;} }
+  var best=-1,bestPts=-1;
+  for(var k in stats){ if(stats[k].pts>bestPts){bestPts=stats[k].pts;best=+k;} }
+  TOURN.champion=best;
+}
+
+function renderBracket() {
+  var nm={tt:L.ui.tt,bd:L.ui.bd,vb:L.ui.vb,sq:L.ui.sq,pd:L.ui.pd,pk:L.ui.pk,tn:L.ui.tn,pe:L.ui.pe,dt:L.ui.dt,cu:L.ui.cu};
+  document.getElementById('bk-title').textContent='🏆 '+nm[TOURN.sportKey];
+  document.getElementById('bk-subtitle').textContent=(TOURN.mode==='ko'?L.ui.ko:L.ui.rr)+' · '+TOURN.players.length+' '+L.ui.players;
+  var body=document.getElementById('bk-body');
+  var html='';
+
+  if(TOURN.mode==='ko'){
+    html = renderVisualKO();
+  } else {
+    // Round Robin — table layout
+    var stats={};
+    for(var i=0;i<TOURN.players.length;i++) stats[i]={w:0,l:0,pts:0,name:TOURN.players[i]};
+    for(var i=0;i<TOURN.matches.length;i++){ var m=TOURN.matches[i]; if(m.winner!==null){stats[m.winner].w++;stats[m.winner].pts+=3;var los=m.winner===m.p1?m.p2:m.p1;stats[los].l++;} }
+    var sorted=Object.keys(stats).map(function(k){return stats[k];});
+    sorted.sort(function(a,b){return b.pts-a.pts||b.w-a.w;});
+    html+='<div style="padding:12px">';
+    html+='<table class="rr-table"><tr><th>#</th><th style="text-align:left">'+L.ui.player+'</th><th>W</th><th>V</th><th>Ptn</th></tr>';
+    for(var i=0;i<sorted.length;i++) html+='<tr><td class="rr-rank">'+(i+1)+'</td><td class="rr-name">'+sorted[i].name+'</td><td>'+sorted[i].w+'</td><td>'+sorted[i].l+'</td><td style="color:#f4d03f">'+sorted[i].pts+'</td></tr>';
+    html+='</table>';
+    html+='<div class="bk-round"><div class="bk-round-title">'+L.ui.round+'</div>';
+    for(var i=0;i<TOURN.matches.length;i++) html+=renderMatchCard(TOURN.matches[i]);
+    html+='</div></div>';
+    if(TOURN.champion!==null&&TOURN.champion!==-1){
+      html+='<div style="padding:12px"><div class="bk-champion"><span class="bk-champion-icon">🏆</span><div class="bk-champion-name">'+TOURN.players[TOURN.champion]+'</div><div class="bk-champion-lbl">'+L.ui.champion+'</div></div>';
+      html+='<div style="text-align:center;padding:8px"><button class="btn btn-g" onclick="goHome()">🏠 Home</button></div></div>';
+    }
+  }
+
+  body.innerHTML=html;
+}
+
+/* ── VISUAL KO BRACKET ── */
+function renderVisualKO() {
+  var BASE = 76; // px per round-1 slot
+  var numRounds = TOURN.rounds.length;
+  var numR1 = TOURN.rounds[0].length;
+  var totalH = numR1 * BASE;
+  var isChamp = TOURN.champion!==null && TOURN.champion!==-1;
+
+  var html = '<div class="vbk-outer"><div class="vbk-wrap">';
+
+  for(var ri=0; ri<numRounds; ri++){
+    var slotH = BASE * Math.pow(2, ri);
+    var tot=numRounds, fromEnd=tot-ri;
+    var rname=fromEnd===1?L.ui.finale:fromEnd===2?L.ui.semifinal:fromEnd===3?L.ui.quarterfinal:(L.ui.round+' '+(ri+1));
+    var isLastRound = ri===numRounds-1;
+
+    html += '<div class="vbk-col">';
+    html += '<div class="vbk-col-lbl">'+rname+'</div>';
+    html += '<div class="vbk-col-matches" style="height:'+totalH+'px">';
+
+    for(var mi=0; mi<TOURN.rounds[ri].length; mi++){
+      var m = TOURN.matches[TOURN.rounds[ri][mi]];
+      var connCls = isLastRound ? 'vbk-slot no-conn' : (mi%2===0 ? 'vbk-slot top-c' : 'vbk-slot bot-c');
+      html += renderVBKSlot(m, slotH, connCls);
+    }
+
+    html += '</div></div>';
+  }
+
+  // Result / champion column
+  html += '<div class="vbk-result-col">';
+  html += '<div class="vbk-result-lbl">'+(isChamp?'🏆':L.ui.finale)+'</div>';
+  html += '<div class="vbk-result-wrap" style="height:'+totalH+'px">';
+  if(isChamp){
+    html += '<div class="vbk-result-box champion">'
+      +'<span class="vbk-trophy-big">🏆</span>'
+      +'<span class="vbk-champ-name">'+TOURN.players[TOURN.champion]+'</span>'
+      +'<span class="vbk-champ-lbl">'+L.ui.champion+'</span>'
+      +'</div>';
+  } else {
+    html += '<div class="vbk-result-box"><div class="vbk-result-pending">'
+      +'<span style="font-size:18px">🏆</span>'
+      +'<span class="vbk-result-pending-name">???</span>'
+      +'</div></div>';
+  }
+  html += '</div></div>';
+
+  html += '</div>'; // vbk-wrap
+
+  if(isChamp){
+    html += '<div style="text-align:center;padding:10px 0 4px"><button class="btn btn-g" onclick="goHome()">🏠 Home</button></div>';
+  }
+
+  html += '</div>'; // vbk-outer
+  return html;
+}
+
+function renderVBKSlot(m, slotH, connCls){
+  var isCurrent = m.id===TOURN.currentMatch;
+  var isDone = m.winner!==null;
+  var isBye = m.score==='BYE';
+
+  var pName=function(pi){ return (pi===null)?'?':(pi===-1?'BYE':TOURN.players[pi]); };
+  var pSeed=function(pi){ return (pi!==null&&pi>=0)?(pi+1):''; };
+
+  var tc1='vbk-team', tc2='vbk-team';
+  if(isDone){
+    tc1=m.winner===m.p1?'vbk-team win':'vbk-team loss';
+    tc2=m.winner===m.p2?'vbk-team win':'vbk-team loss';
+  } else {
+    if(m.p1===null||m.p1===-1) tc1='vbk-team tbd';
+    if(m.p2===null||m.p2===-1) tc2='vbk-team tbd';
+  }
+
+  var foot='';
+  if(isCurrent&&!isDone){
+    foot='<div class="vbk-foot"><button class="vbk-play-btn" onclick="playTournMatch('+m.id+')">▶ '+L.ui.play+'</button></div>';
+  } else if(isDone&&!isBye){
+    foot='<div class="vbk-foot"><span class="vbk-sc">'+m.score+'</span></div>';
+  }
+
+  return '<div class="'+connCls+'" style="height:'+slotH+'px">'
+    +'<div class="vbk-match'+(isCurrent?' active':'')+(isBye?' bye':'') +'">'
+    +'<div class="'+tc1+'"><span class="vbk-seed">'+pSeed(m.p1)+'</span><span class="vbk-name">'+pName(m.p1)+'</span></div>'
+    +'<div class="'+tc2+'"><span class="vbk-seed">'+pSeed(m.p2)+'</span><span class="vbk-name">'+pName(m.p2)+'</span></div>'
+    +foot
+    +'</div>'
+    +'</div>';
+}
+
+/* RR fallback match card */
+function renderMatchCard(m) {
+  var cur=m.id===TOURN.currentMatch, done=m.winner!==null, bye=m.score==='BYE';
+  var cls='bk-match'+(cur?' current':'')+(done?' done':'')+(bye?' bye':'');
+  if(bye){
+    var bn=m.p1!==-1?TOURN.players[m.p1]:(m.p2!==-1?TOURN.players[m.p2]:'');
+    return '<div class="'+cls+'"><div class="bk-players"><span class="bk-p" style="color:#444">'+bn+' — BYE</span></div></div>';
+  }
+  var n1=m.p1!==null&&m.p1!==-1?TOURN.players[m.p1]:'???', n2=m.p2!==null&&m.p2!==-1?TOURN.players[m.p2]:'???';
+  var c1='bk-p pending',c2='bk-p pending';
+  if(done){c1=m.winner===m.p1?'bk-p w':'bk-p l';c2=m.winner===m.p2?'bk-p w':'bk-p l';}
+  var sc=done?'<span class="bk-score">'+m.score+'</span>':'';
+  var pb=cur?'<button class="bk-play" onclick="playTournMatch('+m.id+')">▶ '+L.ui.play+'</button>':'';
+  return '<div class="'+cls+'"><div class="bk-players"><span class="'+c1+'">'+n1+'</span><span class="bk-vs">vs</span><span class="'+c2+'">'+n2+'</span></div>'+sc+pb+'</div>';
+}
+
+function playTournMatch(mid) {
+  var m=TOURN.matches[mid];
+  if(!m||m.winner!==null) return;
+  G.key=TOURN.sportKey;
+  G.sport=JSON.parse(JSON.stringify(SP[TOURN.sportKey]));
+  if(TOURN.sportKey==='cu') G.sport={icon:'⚙️',pointsToWin:10,winBy:1,setsToWin:1,lastSetPoints:10,totalSets:1};
+  G.names[0]=TOURN.players[m.p1]; G.names[1]=TOURN.players[m.p2];
+  document.getElementById('name-r').value=G.names[0]; document.getElementById('name-b').value=G.names[1];
+  resetScores(); showBoardMode(); renderGame(); showScreen('game');
+  var sn={tt:L.ui.tt,bd:L.ui.bd,vb:L.ui.vb,sq:L.ui.sq,pd:L.ui.pd,pk:L.ui.pk,tn:L.ui.tn,pe:L.ui.pe,dt:L.ui.dt,cu:L.ui.cu};
+  speakWithNames((L.say.start||LANGS.nl.say.start)(sn[G.key],G.names[0],G.names[1]));
+}
+
+function tournamentWin(wi) {
+  var m=TOURN.matches[TOURN.currentMatch];
+  if(!m) return;
+  m.winner = wi===0 ? m.p1 : m.p2;
+  m.score = G.sets[0]+'-'+G.sets[1];
+  if(TOURN.mode==='ko') propagateKnockout();
+  findCurrentMatch();
+}
+
+function propagateKnockout() {
+  for(var i=0;i<TOURN.matches.length;i++){
+    var m=TOURN.matches[i];
+    if(m.from){
+      var f1=TOURN.matches[m.from[0]],f2=TOURN.matches[m.from[1]];
+      if(f1.winner!==null)m.p1=f1.winner;
+      if(f2.winner!==null)m.p2=f2.winner;
+      if(m.winner===null&&m.p1!==null&&m.p2!==null){
+        if(m.p1===-1&&m.p2===-1){m.winner=-1;m.score='BYE';}
+        else if(m.p1===-1){m.winner=m.p2;m.score='BYE';}
+        else if(m.p2===-1){m.winner=m.p1;m.score='BYE';}
+      }
+    }
+  }
+}
+
+function tournNextMatch() {
+  dismissWinner();
+  document.getElementById('win-ov').classList.remove('show');
+  renderBracket();
+  showScreen('bracket');
+  if(TOURN.champion!==null&&TOURN.champion!==-1) speak(TOURN.players[TOURN.champion]+' wint het toernooi! Gefeliciteerd!');
+}
+
+/* ═══ INIT ═══ */
+applyUI();
+</script>
+
+<!-- CUSTOM PRESET MODAL -->
+<div id="preset-modal-ov" class="preset-modal-ov" onclick="if(event.target===this)closePresetModal()">
+  <div class="preset-modal">
+    <h3 id="pm-title">Nieuwe Preset</h3>
+    <div class="pm-row"><label>Naam</label><input type="text" id="pm-name" placeholder="bijv. Droppiefloppie" maxlength="20"/></div>
+    <div class="pm-row" style="justify-content:center"><div class="pm-emoji-grid" id="pm-emojis"></div></div>
+    <div class="pm-row"><label>Punten</label><input type="number" id="pm-pts" min="1" max="100" value="10"/></div>
+    <div class="pm-row"><label>Win-marge</label><input type="number" id="pm-margin" min="1" max="5" value="1"/></div>
+    <div class="pm-row"><label>Sets om te winnen</label><input type="number" id="pm-sets" min="1" max="5" value="1"/></div>
+    <div class="pm-btns">
+      <button class="btn btn-g" onclick="closePresetModal()">Annuleren</button>
+      <button class="btn btn-p" onclick="savePreset()">Opslaan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══ PWA: SERVICE WORKER ═══ */
+if('serviceWorker' in navigator){
+  var swCode = [
+    '"use strict";',
+    'var CACHE = "scorecount-v2";',
+    'self.addEventListener("install", function(e){',
+    '  e.waitUntil(',
+    '    caches.open(CACHE).then(function(c){',
+    '      return c.add(new Request(self.registration.scope, {cache:"reload"}));',
+    '    })',
+    '  );',
+    '  self.skipWaiting();',
+    '});',
+    'self.addEventListener("activate", function(e){',
+    '  e.waitUntil(',
+    '    caches.keys().then(function(keys){',
+    '      return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));',
+    '    }).then(function(){ return clients.claim(); })',
+    '  );',
+    '});',
+    'self.addEventListener("fetch", function(e){',
+    '  if(e.request.method !== "GET") return;',
+    '  e.respondWith(',
+    '    caches.match(e.request).then(function(cached){',
+    '      var fresh = fetch(e.request).then(function(r){',
+    '        if(r && r.status===200){',
+    '          var c2 = r.clone();',
+    '          caches.open(CACHE).then(function(c){ c.put(e.request, c2); });',
+    '        }',
+    '        return r;',
+    '      }).catch(function(){ return cached; });',
+    '      return cached || fresh;',
+    '    })',
+    '  );',
+    '});'
+  ].join('\n');
+  var blob = new Blob([swCode], {type:'text/javascript'});
+  var swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).then(function(reg){
+    // Check for updates every time app is opened
+    reg.update();
+  }).catch(function(e){ console.warn('SW:', e); });
+}
+
+/* ═══ PWA: INSTALL BANNER (Android Chrome) ═══ */
+var deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault();
+  deferredInstall = e;
+  setTimeout(function(){ showInstallBanner(); }, 3000);
+});
+
+function showInstallBanner(){
+  if(document.getElementById('pwa-banner')) return;
+  var installLabels = {nl:'Installeer als app',en:'Install as app',de:'Als App installieren',fr:'Installer comme app',es:'Instalar como app',it:'Installa come app',no:'Installer som app',sv:'Installera som app'};
+  var btnLabels = {nl:'Installeer',en:'Install',de:'Installieren',fr:'Installer',es:'Instalar',it:'Installa',no:'Installer',sv:'Installera'};
+  var langKey = 'nl';
+  try{ langKey = Object.keys(LANGS).find(function(k){return LANGS[k]===L;})||'nl'; }catch(e){}
+
+  var b = document.createElement('div');
+  b.id = 'pwa-banner';
+  b.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0d0d18;border-top:1px solid #1a1a28;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;z-index:9999;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.5)';
+  b.innerHTML = '<div style="display:flex;align-items:center;gap:10px">'
+    +'<div style="width:40px;height:40px;border-radius:9px;background:linear-gradient(135deg,#e63946,#4361ee);display:flex;align-items:center;justify-content:center;font-family:Arial Black,sans-serif;font-weight:900;font-size:14px;color:#fff;flex-shrink:0">SC</div>'
+    +'<div>'
+    +'<div style="font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px">ScoreCount</div>'
+    +'<div style="font-family:Rajdhani,sans-serif;font-size:10px;color:#555;letter-spacing:1px">'+(installLabels[langKey]||installLabels.nl)+'</div>'
+    +'</div></div>'
+    +'<div style="display:flex;gap:8px;flex-shrink:0">'
+    +'<button onclick="document.getElementById(\'pwa-banner\').remove()" style="font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;border:1px solid #222;border-radius:7px;padding:7px 10px;background:transparent;color:#444;cursor:pointer">✕</button>'
+    +'<button onclick="doInstall()" style="font-family:Rajdhani,sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;border:none;border-radius:7px;padding:7px 16px;background:linear-gradient(135deg,#e63946,#4361ee);color:#fff;cursor:pointer">'+(btnLabels[langKey]||btnLabels.nl)+'</button>'
+    +'</div>';
+  document.body.appendChild(b);
+}
+
+function doInstall(){
+  if(!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.then(function(){
+    deferredInstall=null;
+    var b=document.getElementById('pwa-banner');
+    if(b) b.remove();
+  });
+}
+</script>
+
+</body>
+</html>
