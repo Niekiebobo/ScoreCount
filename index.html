@@ -2132,8 +2132,8 @@ function buildSR() {
   if(!SR) return null;
   var r = new SR();
   r.lang = L.code;
-  r.continuous = true;
-  r.interimResults = true;
+ r.continuous = false;
+r.interimResults = false;
   r.maxAlternatives = 5;
 
   r.onresult = function(e) {
