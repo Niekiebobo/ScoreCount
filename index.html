@@ -2089,7 +2089,7 @@ function getKW() {
 
 function matchTxt(t) {
   var kw = getKW();
-  var lo = t.toLowerCase();
+  var lo = t.toLowerCase().replace(/[.,!?;:'"]/g, ' ').replace(/\s+/g, ' ').trim();
   for (var i = 0; i < kw.k0.length; i++) {
     if (new RegExp('\\b' + kw.k0[i].replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b').test(lo)) return 0;
   }
