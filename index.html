@@ -2202,11 +2202,13 @@ r.interimResults = false;
     if(e.error==='no-speech') return;
     if(voiceOn) setTimeout(function(){ if(voiceOn&&srInst){try{srInst.start();}catch(x){}} },500);
   };
-
-  r.onend = function() {
-    if(voiceOn) setTimeout(function(){ if(voiceOn&&srInst){try{srInst.start();}catch(x){}} },200);
-  };
-
+  
+ r.onend = function() {
+  if(voiceOn) setTimeout(function(){
+    srInst = buildSR();
+    try{ srInst.start(); }catch(x){}
+  }, 300);
+};
   return r;
 }
 
